@@ -175,8 +175,8 @@ export default function CameraCapture({ presets, onComplete }: Props) {
   // For front angle, also show pitch/roll hints
   const phaseLabel = (() => {
     if (!currentPreset) return "";
-    if (currentPreset.yaw > 10)  return t.cameraHintTurnRight;
-    if (currentPreset.yaw < -10) return t.cameraHintTurnLeft;
+    if (currentPreset.yaw > 10)  return t.cameraHintTurnLeft;
+    if (currentPreset.yaw < -10) return t.cameraHintTurnRight;
     if (!angles) return t.cameraHintFront;
     // Front: give specific axis feedback
     const yawOff   = Math.abs(angles.yaw)   > TOLERANCE_YAW_FRONT;
@@ -203,7 +203,7 @@ export default function CameraCapture({ presets, onComplete }: Props) {
         {/* Phase instruction */}
         {state === "detecting" && currentPreset && (
           <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-            <div className="bg-black/70 backdrop-blur-sm rounded-full px-4 py-1.5 text-xs text-accent font-medium">
+            <div className="bg-black/80 backdrop-blur-sm rounded-full px-5 py-2 text-sm text-white font-semibold shadow-lg">
               {phaseLabel}
             </div>
           </div>
@@ -211,7 +211,7 @@ export default function CameraCapture({ presets, onComplete }: Props) {
 
         {state === "done" && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/60">
-            <p className="text-ok font-semibold text-lg">撮影完了</p>
+            <p className="text-ok font-semibold text-lg">{t.cameraHintDone}</p>
           </div>
         )}
 

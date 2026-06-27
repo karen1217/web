@@ -260,6 +260,7 @@ export interface Translations {
   cameraHintPitchDown: string;
   cameraHintPitchUp: string;
   cameraHintMoreFront: string;
+  cameraHintDone: string;
 
   // Annotation modal (InpaintModal)
   annotationTitle: string;
@@ -686,6 +687,7 @@ const ja: Translations = {
   cameraHintPitchDown: "少し下を向いてください",
   cameraHintPitchUp:   "少し上を向いてください",
   cameraHintMoreFront: "もう少し正面を向いてください",
+  cameraHintDone:      "撮影完了",
 
   annotationTitle: "加工を外す",
   annotationAutoTab: "自動検出",
@@ -1099,6 +1101,7 @@ const en: Translations = {
   cameraHintPitchDown: "Look slightly down",
   cameraHintPitchUp:   "Look slightly up",
   cameraHintMoreFront: "Turn a bit more toward the front",
+  cameraHintDone:      "Capture complete",
 
   annotationTitle: "Remove edits",
   annotationAutoTab: "Auto-detect",
@@ -1512,6 +1515,7 @@ const ko: Translations = {
   cameraHintPitchDown: "조금 아래를 향해 주세요",
   cameraHintPitchUp:   "조금 위를 향해 주세요",
   cameraHintMoreFront: "좀 더 정면을 향해 주세요",
+  cameraHintDone:      "촬영 완료",
 
   annotationTitle: "편집 제거",
   annotationAutoTab: "자동 감지",
