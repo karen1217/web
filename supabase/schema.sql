@@ -27,10 +27,10 @@ returns trigger language plpgsql security definer as $$
 begin
   insert into public.angle_presets (user_id, yaw, label, is_default, sort_order) values
     (new.id,   0, '正面',       true, 0),
-    (new.id,  30, '斜め30°右', true, 1),
-    (new.id,  45, '斜め45°右', true, 2),
-    (new.id, -30, '斜め30°左', true, 3),
-    (new.id, -45, '斜め45°左', true, 4);
+    (new.id,  30, '斜め30°左', true, 1),
+    (new.id,  45, '斜め45°左', true, 2),
+    (new.id, -30, '斜め30°右', true, 3),
+    (new.id, -45, '斜め45°右', true, 4);
   return new;
 end;
 $$;
