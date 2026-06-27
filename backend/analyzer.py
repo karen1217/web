@@ -59,7 +59,6 @@ class _LazyAnalyzer:
             num_faces=1,
             running_mode=mp_vision.RunningMode.IMAGE,
             min_face_detection_confidence=0.3,
-            min_face_presence_score=0.3,
         )
         self._landmarker = mp_vision.FaceLandmarker.create_from_options(options)
         self._mp = mp
