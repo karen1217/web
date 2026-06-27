@@ -16,9 +16,11 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Pre-download the face landmarker model at build time (~25 MB)
+# Pre-download models at build time
 RUN wget -q -O face_landmarker.task \
     "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+RUN wget -q -O yunet.onnx \
+    "https://github.com/opencv/opencv_zoo/raw/main/models/face_detection_yunet/face_detection_yunet_2023mar.onnx"
 
 COPY main.py analyzer.py ./
 

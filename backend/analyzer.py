@@ -110,9 +110,9 @@ class _LazyAnalyzer:
         if angles is None:
             angles = self._estimate_from_landmarks(result)
 
-        # Fallback 2: OpenCV profile face Haar cascade (横顔・横向き対応)
+        # Fallback 2: YuNet DNN detector (handles frontal + profile on CPU)
         if angles is None:
-            angles = self._estimate_from_profile_cascade(img_bgr)
+            angles = self._estimate_from_yunet(img_bgr)
 
         ycrcb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YCrCb)
         brightness = float(np.mean(ycrcb[:, :, 0]))
@@ -174,58 +174,71 @@ class _LazyAnalyzer:
         return {"yaw": yaw, "pitch": pitch, "roll": roll}
 
     @staticmethod
-    def _estimate_from_profile_cascade(img_bgr: np.ndarray) -> Optional[dict]:
-        """Detect side-profile face with OpenCV Haar cascade and estimate pitch/roll."""
-        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
-        gray = cv2.equalizeHist(gray)
-        img_h, img_w = img_bgr.shape[:2]
-
-        cascade_path = cv2.data.haarcascades + "haarcascade_profileface.xml"
-        cascade = cv2.CascadeClassifier(cascade_path)
-
-        def detect(g: np.ndarray):
-            return cascade.detectMultiScale(
-                g, scaleFactor=1.05, minNeighbors=3,
-                minSize=(max(30, img_w // 8), max(30, img_h // 8)),
-            )
-
-        # Try left-facing profile
-        faces = detect(gray)
-        facing_sign = 1.0
-        if len(faces) == 0:
-            # Flip and try right-facing profile
-            faces = detect(cv2.flip(gray, 1))
-            facing_sign = -1.0
-
-        if len(faces) == 0:
+    def _estimate_from_yunet(img_bgr: np.ndarray) -> Optional[dict]:
+        """Detect face with YuNet DNN (handles frontal + profile) and estimate angles."""
+        model_path = os.path.join(os.path.dirname(__file__), "yunet.onnx")
+        if not os.path.exists(model_path):
+            logger.warning("yunet.onnx not found, skipping YuNet detection")
             return None
 
-        x, y, w, h = faces[0]
+        h, w = img_bgr.shape[:2]
 
-        # Roll: estimate from the dominant near-vertical edge inside the face ROI
-        roi = gray[y:y+h, x:x+w]
-        edges = cv2.Canny(roi, 40, 120)
-        lines = cv2.HoughLinesP(edges, 1, math.pi / 180, threshold=20,
-                                minLineLength=h // 4, maxLineGap=h // 6)
-        roll = 0.0
-        if lines is not None:
-            angles = []
-            for x1, y1, x2, y2 in lines[:, 0]:
-                if abs(x2 - x1) < abs(y2 - y1):  # near-vertical lines only
-                    a = math.atan2(x2 - x1, y2 - y1) * 180 / math.pi
-                    angles.append(a)
-            if angles:
-                roll = float(np.median(angles))
+        # Try multiple input sizes — larger helps with profile detection
+        for input_size in [(w, h), (640, 640), (320, 320)]:
+            try:
+                detector = cv2.FaceDetectorYN.create(
+                    model_path, "", input_size,
+                    score_threshold=0.4,
+                    nms_threshold=0.3,
+                )
+                img_resized = cv2.resize(img_bgr, input_size) if input_size != (w, h) else img_bgr
+                _, faces = detector.detect(img_resized)
+                if faces is not None and len(faces) > 0:
+                    # Scale keypoints back to original image size
+                    sx = w / input_size[0]
+                    sy = h / input_size[1]
+                    face = faces[0]
+                    # YuNet keypoints: right_eye, left_eye, nose, right_mouth, left_mouth
+                    kps = face[4:14].reshape(5, 2)
+                    kps[:, 0] *= sx
+                    kps[:, 1] *= sy
 
-        # Pitch: face center vertical offset from image center
-        face_cy = (y + h / 2) / img_h  # 0 = top, 1 = bottom
-        pitch = (0.5 - face_cy) * 40   # positive = looking down
+                    right_eye, left_eye, nose, right_mouth, left_mouth = kps
 
-        # Yaw: fixed at ±85° for side profile
-        yaw = 85.0 * facing_sign
+                    eye_dx = float(left_eye[0] - right_eye[0])
+                    eye_dy = float(left_eye[1] - right_eye[1])
+                    eye_dist = math.sqrt(eye_dx**2 + eye_dy**2)
 
-        logger.info("Profile cascade: yaw=%.1f pitch=%.1f roll=%.1f", yaw, pitch, roll)
-        return {"yaw": round(yaw, 1), "pitch": round(pitch, 1), "roll": round(roll, 1)}
+                    face_w = float(face[2]) * sx
+                    if face_w < 1:
+                        continue
+
+                    # Yaw: eye separation relative to face width
+                    # Frontal → ~0.55 × face_w apart; Profile → eyes overlap
+                    separation_ratio = eye_dx / face_w
+                    clamped = max(-1.0, min(1.0, separation_ratio / 0.55))
+                    yaw_sign = -1.0 if eye_dx < 0 else 1.0
+                    yaw = yaw_sign * math.acos(abs(clamped)) * 180 / math.pi
+
+                    # Roll: angle of the eye line from horizontal
+                    roll = math.atan2(eye_dy, eye_dx + 1e-6) * 180 / math.pi
+
+                    # Pitch: nose below/above eye midpoint relative to face height
+                    eye_mid_y = (right_eye[1] + left_eye[1]) / 2
+                    face_h = float(face[3]) * sy
+                    pitch_ratio = (float(nose[1]) - eye_mid_y) / max(face_h, 1)
+                    pitch = -(pitch_ratio - 0.3) * 80
+
+                    logger.info(
+                        "YuNet: yaw=%.1f pitch=%.1f roll=%.1f eye_dx=%.1f face_w=%.1f",
+                        yaw, pitch, roll, eye_dx, face_w,
+                    )
+                    return {"yaw": round(yaw, 1), "pitch": round(pitch, 1), "roll": round(roll, 1)}
+            except Exception as e:
+                logger.warning("YuNet attempt failed: %s", e)
+                continue
+
+        return None
 
 
 _analyzer = _LazyAnalyzer()
