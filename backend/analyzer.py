@@ -58,6 +58,8 @@ class _LazyAnalyzer:
             output_facial_transformation_matrixes=True,
             num_faces=1,
             running_mode=mp_vision.RunningMode.IMAGE,
+            min_face_detection_confidence=0.3,
+            min_face_presence_score=0.3,
         )
         self._landmarker = mp_vision.FaceLandmarker.create_from_options(options)
         self._mp = mp
@@ -73,13 +75,8 @@ class _LazyAnalyzer:
             img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
         return img
 
-    def analyze_one(self, img_bytes: bytes) -> dict:
-        self._ensure_loaded()
-
-        img_bgr = self._decode(img_bytes)
-        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+    def _run_landmarker(self, img_rgb: np.ndarray):
         mp_image = self._mp.Image(image_format=self._mp.ImageFormat.SRGB, data=img_rgb)
-
         result = self._landmarker.detect(mp_image)
         logger.info(
             "Detection: faces=%d matrices=%d shape=%s",
@@ -87,6 +84,24 @@ class _LazyAnalyzer:
             len(result.facial_transformation_matrixes),
             img_rgb.shape,
         )
+        return result
+
+    def analyze_one(self, img_bytes: bytes) -> dict:
+        self._ensure_loaded()
+
+        img_bgr = self._decode(img_bytes)
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+
+        result = self._run_landmarker(img_rgb)
+
+        # If no face found, try upscaling the image (helps on CPU with small/dim faces)
+        if not result.face_landmarks:
+            h, w = img_rgb.shape[:2]
+            scale = min(2.0, 1920 / max(h, w)) if max(h, w) < 960 else 1.5
+            up = cv2.resize(img_rgb, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_CUBIC)
+            result2 = self._run_landmarker(up)
+            if result2.face_landmarks:
+                result = result2
 
         # Primary: transformation matrix (most accurate, frontal + mild profile)
         angles = self._extract_angles(result)
