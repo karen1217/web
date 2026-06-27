@@ -33,7 +33,15 @@ export default function SignupPage() {
     setError(null);
 
     const supabase = createClient();
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        // Use the current origin so the confirmation link works on any domain
+        // (production Vercel URL, staging, localhost, etc.)
+        emailRedirectTo: `${window.location.origin}/pro/login`,
+      },
+    });
 
     if (error) {
       console.error("signup error:", error.status, error.message);
