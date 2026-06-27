@@ -530,7 +530,7 @@ const ja: Translations = {
   navCapture: "撮影",
   navTimeline: "タイムライン",
   navSettings: "設定",
-  navAbout: "Angle Logとは",
+  navAbout: "このアプリとは",
   navLogin: "ログイン",
   navLogout: "ログアウト",
   navUnsavedLeave: "撮影した写真がまだ保存されていません。\nこのページを離れますか？",

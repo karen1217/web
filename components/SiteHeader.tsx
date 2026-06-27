@@ -103,7 +103,7 @@ export default function SiteHeader() {
                 </Link>
               ))
             ) : (
-              <Link href="/about" className="hidden sm:inline text-muted hover:text-fg transition-colors whitespace-nowrap">
+              <Link href="/about" className="text-muted hover:text-fg transition-colors whitespace-nowrap text-sm">
                 {t.navAbout}
               </Link>
             )}
