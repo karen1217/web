@@ -45,21 +45,25 @@ export async function analyzeImages(
     measureBrightness(after),
   ]);
 
+  const brightness_diff =
+    bBright > 0 ? round1(((aBright - bBright) / bBright) * 100) : 0;
+
+  const partial_detection = bResult.partial || aResult.partial;
+
   if (!bResult.angles || !aResult.angles) {
+    // Face not fully detected (profile shots, single body-part photos, etc.)
+    // Still return brightness, zero out angles, and flag as partial.
     return {
       yaw_diff: 0,
       pitch_diff: 0,
       roll_diff: 0,
-      brightness_diff: 0,
-      before_angles: { yaw: 0, pitch: 0, roll: 0 },
-      after_angles:  { yaw: 0, pitch: 0, roll: 0 },
+      brightness_diff,
+      before_angles: bResult.angles ? roundAngles(bResult.angles) : { yaw: 0, pitch: 0, roll: 0 },
+      after_angles:  aResult.angles ? roundAngles(aResult.angles) : { yaw: 0, pitch: 0, roll: 0 },
       partial_detection: true,
-      error: "no_face_detected",
+      error: null,
     };
   }
-
-  const brightness_diff =
-    bBright > 0 ? round1(((aBright - bBright) / bBright) * 100) : 0;
 
   return {
     yaw_diff:        round1(aResult.angles.yaw   - bResult.angles.yaw),
@@ -68,7 +72,7 @@ export async function analyzeImages(
     brightness_diff,
     before_angles:   roundAngles(bResult.angles),
     after_angles:    roundAngles(aResult.angles),
-    partial_detection: false,
+    partial_detection,
     error: null,
   };
 }

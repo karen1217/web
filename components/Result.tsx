@@ -67,7 +67,12 @@ export default function Result({ result, beforeURL, afterURL }: Props) {
   const [scoringOpen,    setScoringOpen]    = useState(false);
   const [expandedMetric, setExpandedMetric] = useState<string | null>(null);
 
-  const overall = calcOverall(result, scoring);
+  // When partial detection, exclude angle metrics from the overall score
+  // (angles may be 0 or estimated from landmarks, so they would be misleading)
+  const effectiveScoring = result.partial_detection
+    ? { ...scoring, yaw: false, pitch: false, roll: false }
+    : scoring;
+  const overall = calcOverall(result, effectiveScoring);
   const values: Record<string, number> = {
     yaw: yaw_diff, pitch: pitch_diff, roll: roll_diff, brightness: brightness_diff,
   };
@@ -82,6 +87,14 @@ export default function Result({ result, beforeURL, afterURL }: Props) {
 
   return (
     <section className="space-y-6" id="result">
+
+      {/* Partial-detection notice */}
+      {result.partial_detection && (
+        <div className="rounded-lg bg-warn/10 border border-warn/30 px-4 py-3 text-sm text-warn flex gap-2 items-start">
+          <span className="flex-shrink-0 font-bold">!</span>
+          <p>{t.partialDetectionNotice}</p>
+        </div>
+      )}
 
       {/* Overall score */}
       <div className={`rounded-2xl border-2 p-5 flex items-center gap-4 ${LEVEL_BG[overall]}`}>

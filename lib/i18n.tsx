@@ -21,6 +21,7 @@ export interface Translations {
   analyzing: string;
   metricInfoButton: string;
   serverError: string;
+  partialDetectionNotice: string;
   terms: string;
   privacy: string;
 
@@ -421,6 +422,7 @@ const ja: Translations = {
   analyzing: "解析中...",
   metricInfoButton: "評価基準とは？",
   serverError: "サーバーとの通信に失敗しました。しばらく待ってから再試行してください。",
+  partialDetectionNotice: "顔全体を検出できなかったため、角度は概算値または未計測です。横顔・パーツ単体の写真では明るさの比較を参考にしてください。",
   terms: "利用規約",
   privacy: "プライバシーポリシー",
 
@@ -819,6 +821,7 @@ const en: Translations = {
   analyzing: "Analyzing...",
   metricInfoButton: "About the metrics",
   serverError: "Failed to connect to server. Please try again later.",
+  partialDetectionNotice: "Could not detect the full face. Angles are estimated or unavailable. For profile shots or single-part photos, use the brightness comparison as reference.",
   terms: "Terms of Use",
   privacy: "Privacy Policy",
 
@@ -1217,6 +1220,7 @@ const ko: Translations = {
   analyzing: "분석 중...",
   metricInfoButton: "평가 기준이란？",
   serverError: "서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+  partialDetectionNotice: "얼굴 전체를 감지하지 못했습니다. 각도는 추정값이거나 측정 불가입니다. 옆모습이나 부분 사진의 경우 밝기 비교를 참고해 주세요.",
   terms: "이용약관",
   privacy: "개인정보처리방침",
 
