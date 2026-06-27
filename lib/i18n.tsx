@@ -20,6 +20,8 @@ export interface Translations {
   analyzeButton: string;
   analyzing: string;
   metricInfoButton: string;
+  resultAboutCTA: string;
+  resultAboutButton: string;
   serverError: string;
   partialDetectionNotice: string;
   terms: string;
@@ -436,6 +438,8 @@ const ja: Translations = {
   analyzeButton: "角度・明るさを解析する",
   analyzing: "解析中...",
   metricInfoButton: "評価基準とは？",
+  resultAboutCTA: "撮影・記録などの他の機能も使えます",
+  resultAboutButton: "他の機能を見る →",
   serverError: "サーバーとの通信に失敗しました。しばらく待ってから再試行してください。",
   partialDetectionNotice: "顔全体を検出できなかったため、角度は概算値または未計測です。横顔・パーツ単体の写真では明るさの比較を参考にしてください。",
   terms: "利用規約",
@@ -852,6 +856,8 @@ const en: Translations = {
   analyzeButton: "Analyze angle & brightness",
   analyzing: "Analyzing...",
   metricInfoButton: "About the metrics",
+  resultAboutCTA: "More features available: capture, record, and more",
+  resultAboutButton: "See all features →",
   serverError: "Failed to connect to server. Please try again later.",
   partialDetectionNotice: "Could not detect the full face. Angles are estimated or unavailable. For profile shots or single-part photos, use the brightness comparison as reference.",
   terms: "Terms of Use",
@@ -1268,6 +1274,8 @@ const ko: Translations = {
   analyzeButton: "각도・밝기 분석하기",
   analyzing: "분석 중...",
   metricInfoButton: "평가 기준이란？",
+  resultAboutCTA: "촬영·기록 등 더 많은 기능을 사용할 수 있습니다",
+  resultAboutButton: "다른 기능 보기 →",
   serverError: "서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",
   partialDetectionNotice: "얼굴 전체를 감지하지 못했습니다. 각도는 추정값이거나 측정 불가입니다. 옆모습이나 부분 사진의 경우 밝기 비교를 참고해 주세요.",
   terms: "이용약관",

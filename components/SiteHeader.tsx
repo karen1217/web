@@ -73,8 +73,8 @@ export default function SiteHeader() {
         <div className="flex items-center gap-6">
           {/* Logo icon placeholder (replace src when asset is ready) */}
           <Link
-            href="/pro/dashboard"
-            onClick={(e) => confirmNav(e, "/pro/dashboard")}
+            href="/about"
+            onClick={(e) => confirmNav(e, "/about")}
             className="flex items-center gap-2 shrink-0"
           >
             <div className="h-7 w-7 rounded overflow-hidden flex-shrink-0">

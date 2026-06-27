@@ -201,6 +201,17 @@ export default function Home() {
             <Result result={result} beforeURL={beforeURL} afterURL={afterURL} />
             <AdBanner scriptSrc={process.env.NEXT_PUBLIC_AD_RESULT_SRC} />
             <SaveCTA result={result} beforeFile={beforeFile} afterFile={afterFile} />
+            {/* About CTA */}
+            <div className="rounded-xl border border-border px-4 py-4 flex items-center justify-between gap-4">
+              <p className="text-xs text-muted leading-relaxed">{t.resultAboutCTA}</p>
+              <Link
+                href="/about"
+                className="shrink-0 text-xs font-medium border border-accent/50 rounded-lg px-3 py-1.5
+                           text-fg/80 hover:border-accent hover:text-fg transition-colors whitespace-nowrap"
+              >
+                {t.resultAboutButton}
+              </Link>
+            </div>
           </div>
         )}
       </main>
