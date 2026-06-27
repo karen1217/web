@@ -181,9 +181,9 @@ def analyze_images(before_bytes: bytes, after_bytes: bytes) -> dict:
     except ValueError as exc:
         error_code = str(exc)
 
-    except Exception:
+    except Exception as exc:
         logger.exception("Unexpected error during face analysis")
-        error_code = "analysis_failed"
+        error_code = f"analysis_failed:{type(exc).__name__}:{exc}"
 
     finally:
         del before_bytes, after_bytes
