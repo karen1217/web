@@ -1,19 +1,25 @@
 "use client";
 import { useEffect, useRef } from "react";
 
-export default function AdBanner() {
+interface Props {
+  scriptSrc?: string;
+}
+
+export default function AdBanner({ scriptSrc }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
 
+  const src = scriptSrc ?? process.env.NEXT_PUBLIC_AD_BANNER_SRC;
+
   useEffect(() => {
-    if (!containerRef.current || containerRef.current.childElementCount > 0) return;
-    // Adsterraのバナー広告スクリプトをここに貼る
-    // ダッシュボード → Ad Units → Banner → Get Code でURLを取得
+    if (!src || !containerRef.current || containerRef.current.childElementCount > 0) return;
     const script = document.createElement("script");
     script.async = true;
     script.setAttribute("data-cfasync", "false");
-    script.src = "//ADSTERRA_BANNER_SCRIPT_URL"; // ← ここを置き換える
+    script.src = src;
     containerRef.current.appendChild(script);
-  }, []);
+  }, [src]);
+
+  if (!src) return null;
 
   return (
     <div className="flex justify-center my-2">

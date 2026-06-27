@@ -199,6 +199,7 @@ export default function Home() {
         {result && beforeURL && afterURL && (
           <div className="space-y-4">
             <Result result={result} beforeURL={beforeURL} afterURL={afterURL} />
+            <AdBanner scriptSrc={process.env.NEXT_PUBLIC_AD_RESULT_SRC} />
             <SaveCTA result={result} beforeFile={beforeFile} afterFile={afterFile} />
           </div>
         )}
