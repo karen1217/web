@@ -60,7 +60,7 @@ export default function Home() {
       const res = await analyzeImages(compBefore, compAfter);
 
       if (res.error) {
-        setErrorMsg(getErrorMessage(res.error));
+        setErrorMsg(res.error); // raw code for debugging
       } else {
         setResult(res);
       }
