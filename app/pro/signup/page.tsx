@@ -45,10 +45,7 @@ export default function SignupPage() {
 
     if (error) {
       console.error("signup error:", error.status, error.message);
-      const msg = error.status === 429
-        ? t.signupErrorFailed                     // rate limit
-        : `${t.signupErrorFailed} (${error.message})`;
-      setError(msg);
+      setError(`[${error.status}] ${error.message}`);
       setLoading(false);
       return;
     }
