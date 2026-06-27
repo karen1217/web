@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import type { AnglePreset } from "@/lib/supabase/types";
 import { useT } from "@/lib/i18n";
+import { localizePresetLabel } from "@/lib/presetLabel";
 
 interface Props {
   presets:         AnglePreset[];
@@ -133,7 +134,9 @@ export default function CaptureGuide({
                       <span className="text-sm tabular-nums text-muted w-12">
                         {preset.yaw > 0 ? "+" : ""}{preset.yaw}°
                       </span>
-                      <span className="text-sm">{preset.label}</span>
+                      <span className="text-sm">
+                        {localizePresetLabel(preset, t.presetDefaultLabel)}
+                      </span>
                     </button>
                     <button
                       onClick={() => handleRemove(preset.id)}

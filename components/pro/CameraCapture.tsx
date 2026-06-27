@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { getFaceLandmarker, extractAngles, type FaceAngles } from "@/lib/mediapipe";
 import AngleIndicator from "./AngleIndicator";
 import type { AnglePreset } from "@/lib/supabase/types";
+import { useT } from "@/lib/i18n";
 
 interface CapturedShot {
   preset:  AnglePreset;
@@ -33,6 +34,7 @@ function captureOrder(yaw: number): number {
 }
 
 export default function CameraCapture({ presets, onComplete }: Props) {
+  const { t } = useT();
   const videoRef     = useRef<HTMLVideoElement>(null);
   const canvasRef    = useRef<HTMLCanvasElement>(null);
   const rafRef       = useRef<number>(0);
@@ -173,17 +175,17 @@ export default function CameraCapture({ presets, onComplete }: Props) {
   // For front angle, also show pitch/roll hints
   const phaseLabel = (() => {
     if (!currentPreset) return "";
-    if (currentPreset.yaw > 10)  return "ゆっくり右を向いてください";
-    if (currentPreset.yaw < -10) return "ゆっくり左を向いてください";
-    if (!angles) return "正面を向いてください";
+    if (currentPreset.yaw > 10)  return t.cameraHintTurnRight;
+    if (currentPreset.yaw < -10) return t.cameraHintTurnLeft;
+    if (!angles) return t.cameraHintFront;
     // Front: give specific axis feedback
     const yawOff   = Math.abs(angles.yaw)   > TOLERANCE_YAW_FRONT;
     const pitchOff = Math.abs(angles.pitch) > TOLERANCE_PITCH;
     const rollOff  = Math.abs(angles.roll)  > TOLERANCE_ROLL;
-    if (!yawOff && !pitchOff && !rollOff) return "そのまま静止してください";
-    if (rollOff)  return angles.roll  > 0 ? "頭を少し右に傾けてください" : "頭を少し左に傾けてください";
-    if (pitchOff) return angles.pitch > 0 ? "少し下を向いてください"      : "少し上を向いてください";
-    return "もう少し正面を向いてください";
+    if (!yawOff && !pitchOff && !rollOff) return t.cameraHintHold;
+    if (rollOff)  return angles.roll  > 0 ? t.cameraHintRollRight : t.cameraHintRollLeft;
+    if (pitchOff) return angles.pitch > 0 ? t.cameraHintPitchDown : t.cameraHintPitchUp;
+    return t.cameraHintMoreFront;
   })();
 
   return (

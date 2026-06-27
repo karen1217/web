@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { setUnsaved } from "@/lib/unsavedStore";
 import type { AnglePreset, Case } from "@/lib/supabase/types";
 import { useT } from "@/lib/i18n";
+import { localizePresetLabel } from "@/lib/presetLabel";
 
 type Phase = "guide" | "camera" | "preview" | "case-select" | "details" | "saving" | "done";
 
@@ -244,11 +245,13 @@ export default function CaptureClient({ presets: initialPresets, cases: initialC
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={shot.dataUrl}
-                  alt={shot.preset.label}
+                  alt={localizePresetLabel(shot.preset, t.presetDefaultLabel)}
                   className="w-full h-full object-cover"
                 />
               </div>
-              <p className="text-xs text-center text-muted">{shot.preset.label}</p>
+              <p className="text-xs text-center text-muted">
+                {localizePresetLabel(shot.preset, t.presetDefaultLabel)}
+              </p>
             </div>
           ))}
         </div>
@@ -306,9 +309,12 @@ export default function CaptureClient({ presets: initialPresets, cases: initialC
           {shots.map(shot => (
             <div key={shot.preset.id} className="flex-shrink-0 text-center">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={shot.dataUrl} alt={shot.preset.label}
+              <img src={shot.dataUrl}
+                alt={localizePresetLabel(shot.preset, t.presetDefaultLabel)}
                 className="w-16 h-22 object-cover rounded-lg border border-border" />
-              <p className="text-xs text-muted mt-1">{shot.preset.label}</p>
+              <p className="text-xs text-muted mt-1">
+                {localizePresetLabel(shot.preset, t.presetDefaultLabel)}
+              </p>
             </div>
           ))}
         </div>

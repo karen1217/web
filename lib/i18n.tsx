@@ -248,6 +248,18 @@ export interface Translations {
   presetAddError: string;
   presetAddFailed: string;
   presetDeleteFailed: string;
+  presetDefaultLabel: (yaw: number) => string;
+
+  // CameraCapture hints
+  cameraHintFront: string;
+  cameraHintTurnRight: string;
+  cameraHintTurnLeft: string;
+  cameraHintHold: string;
+  cameraHintRollRight: string;
+  cameraHintRollLeft: string;
+  cameraHintPitchDown: string;
+  cameraHintPitchUp: string;
+  cameraHintMoreFront: string;
 
   // Annotation modal (InpaintModal)
   annotationTitle: string;
@@ -660,6 +672,20 @@ const ja: Translations = {
   presetAddError: "角度は -180〜180 の数値で入力してください",
   presetAddFailed: "追加に失敗しました",
   presetDeleteFailed: "削除に失敗しました",
+  presetDefaultLabel: (yaw) => {
+    if (yaw === 0) return "正面";
+    const dir = yaw > 0 ? "右" : "左";
+    return `斜め${Math.abs(yaw)}°${dir}`;
+  },
+  cameraHintFront:     "正面を向いてください",
+  cameraHintTurnRight: "ゆっくり右を向いてください",
+  cameraHintTurnLeft:  "ゆっくり左を向いてください",
+  cameraHintHold:      "そのまま静止してください",
+  cameraHintRollRight: "頭を少し右に傾けてください",
+  cameraHintRollLeft:  "頭を少し左に傾けてください",
+  cameraHintPitchDown: "少し下を向いてください",
+  cameraHintPitchUp:   "少し上を向いてください",
+  cameraHintMoreFront: "もう少し正面を向いてください",
 
   annotationTitle: "加工を外す",
   annotationAutoTab: "自動検出",
@@ -1059,6 +1085,20 @@ const en: Translations = {
   presetAddError: "Angle must be between -180 and 180",
   presetAddFailed: "Failed to add",
   presetDeleteFailed: "Failed to delete",
+  presetDefaultLabel: (yaw) => {
+    if (yaw === 0) return "Front";
+    const dir = yaw > 0 ? "Right" : "Left";
+    return `${Math.abs(yaw)}° ${dir}`;
+  },
+  cameraHintFront:     "Face forward",
+  cameraHintTurnRight: "Turn slowly to the right",
+  cameraHintTurnLeft:  "Turn slowly to the left",
+  cameraHintHold:      "Hold still",
+  cameraHintRollRight: "Tilt your head slightly right",
+  cameraHintRollLeft:  "Tilt your head slightly left",
+  cameraHintPitchDown: "Look slightly down",
+  cameraHintPitchUp:   "Look slightly up",
+  cameraHintMoreFront: "Turn a bit more toward the front",
 
   annotationTitle: "Remove edits",
   annotationAutoTab: "Auto-detect",
@@ -1458,6 +1498,20 @@ const ko: Translations = {
   presetAddError: "각도는 -180〜180 사이의 숫자로 입력해 주세요",
   presetAddFailed: "추가에 실패했습니다",
   presetDeleteFailed: "삭제에 실패했습니다",
+  presetDefaultLabel: (yaw) => {
+    if (yaw === 0) return "정면";
+    const dir = yaw > 0 ? "오른쪽" : "왼쪽";
+    return `${Math.abs(yaw)}° ${dir}`;
+  },
+  cameraHintFront:     "정면을 향해 주세요",
+  cameraHintTurnRight: "천천히 오른쪽을 향해 주세요",
+  cameraHintTurnLeft:  "천천히 왼쪽을 향해 주세요",
+  cameraHintHold:      "그대로 정지해 주세요",
+  cameraHintRollRight: "머리를 조금 오른쪽으로 기울여 주세요",
+  cameraHintRollLeft:  "머리를 조금 왼쪽으로 기울여 주세요",
+  cameraHintPitchDown: "조금 아래를 향해 주세요",
+  cameraHintPitchUp:   "조금 위를 향해 주세요",
+  cameraHintMoreFront: "좀 더 정면을 향해 주세요",
 
   annotationTitle: "편집 제거",
   annotationAutoTab: "자동 감지",
