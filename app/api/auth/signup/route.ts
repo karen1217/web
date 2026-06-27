@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Generate signup link (creates the user + confirmation URL in one call)
-  const origin = req.headers.get("origin") ?? "https://web-six-psi-f7cbkr3nk6.vercel.app";
+  const origin = req.headers.get("origin") ?? "https://angle-log.vercel.app";
   const { data, error } = await admin.auth.admin.generateLink({
     type: "signup",
     email,
