@@ -36,7 +36,11 @@ export default function SignupPage() {
     const { data, error } = await supabase.auth.signUp({ email, password });
 
     if (error) {
-      setError(t.signupErrorFailed);
+      console.error("signup error:", error.status, error.message);
+      const msg = error.status === 429
+        ? t.signupErrorFailed                     // rate limit
+        : `${t.signupErrorFailed} (${error.message})`;
+      setError(msg);
       setLoading(false);
       return;
     }

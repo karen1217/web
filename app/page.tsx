@@ -65,7 +65,12 @@ export default function Home() {
         setResult(res);
       }
     } catch (err) {
-      setErrorMsg(t.serverError);
+      const msg = String(err);
+      if (msg.includes("502") || msg.includes("Backend unavailable")) {
+        setErrorMsg(getErrorMessage("Backend_unavailable"));
+      } else {
+        setErrorMsg(t.serverError);
+      }
       console.error(err);
     } finally {
       setLoading(false);

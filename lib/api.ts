@@ -18,6 +18,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     "写真に複数の顔が含まれています。1人のみ写った写真を使用してください。",
   low_quality:
     "画像が不鮮明です。より鮮明な写真をお試しください。",
+  Backend_unavailable:
+    "サーバーが準備中です（初回起動に最大60秒かかります）。しばらくしてから再度お試しください。",
 };
 
 export function getErrorMessage(code: string | null): string {
