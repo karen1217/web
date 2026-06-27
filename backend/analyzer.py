@@ -113,7 +113,7 @@ class _LazyAnalyzer:
         ycrcb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YCrCb)
         brightness = float(np.mean(ycrcb[:, :, 0]))
 
-        del img_bgr, img_rgb, mp_image
+        del img_bgr, img_rgb
         return {
             "yaw":        angles["yaw"]   if angles else 0.0,
             "pitch":      angles["pitch"] if angles else 0.0,
