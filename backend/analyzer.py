@@ -106,9 +106,13 @@ class _LazyAnalyzer:
         angles = self._extract_angles(result)
         partial = angles is None
 
-        # Fallback: estimate from 2-D landmarks (profile / partial-face shots)
+        # Fallback 1: estimate from 2-D MediaPipe landmarks
         if angles is None:
             angles = self._estimate_from_landmarks(result)
+
+        # Fallback 2: OpenCV profile face Haar cascade (横顔・横向き対応)
+        if angles is None:
+            angles = self._estimate_from_profile_cascade(img_bgr)
 
         ycrcb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YCrCb)
         brightness = float(np.mean(ycrcb[:, :, 0]))
@@ -119,7 +123,6 @@ class _LazyAnalyzer:
             "pitch":      angles["pitch"] if angles else 0.0,
             "roll":       angles["roll"]  if angles else 0.0,
             "brightness": brightness,
-            # partial=True only when both methods failed (no face visible at all)
             "partial":    partial and (angles is None),
         }
 
@@ -169,6 +172,60 @@ class _LazyAnalyzer:
         pitch       = -(pitch_ratio - 1.3) * 45
 
         return {"yaw": yaw, "pitch": pitch, "roll": roll}
+
+    @staticmethod
+    def _estimate_from_profile_cascade(img_bgr: np.ndarray) -> Optional[dict]:
+        """Detect side-profile face with OpenCV Haar cascade and estimate pitch/roll."""
+        gray = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2GRAY)
+        gray = cv2.equalizeHist(gray)
+        img_h, img_w = img_bgr.shape[:2]
+
+        cascade_path = cv2.data.haarcascades + "haarcascade_profileface.xml"
+        cascade = cv2.CascadeClassifier(cascade_path)
+
+        def detect(g: np.ndarray):
+            return cascade.detectMultiScale(
+                g, scaleFactor=1.05, minNeighbors=3,
+                minSize=(max(30, img_w // 8), max(30, img_h // 8)),
+            )
+
+        # Try left-facing profile
+        faces = detect(gray)
+        facing_sign = 1.0
+        if len(faces) == 0:
+            # Flip and try right-facing profile
+            faces = detect(cv2.flip(gray, 1))
+            facing_sign = -1.0
+
+        if len(faces) == 0:
+            return None
+
+        x, y, w, h = faces[0]
+
+        # Roll: estimate from the dominant near-vertical edge inside the face ROI
+        roi = gray[y:y+h, x:x+w]
+        edges = cv2.Canny(roi, 40, 120)
+        lines = cv2.HoughLinesP(edges, 1, math.pi / 180, threshold=20,
+                                minLineLength=h // 4, maxLineGap=h // 6)
+        roll = 0.0
+        if lines is not None:
+            angles = []
+            for x1, y1, x2, y2 in lines[:, 0]:
+                if abs(x2 - x1) < abs(y2 - y1):  # near-vertical lines only
+                    a = math.atan2(x2 - x1, y2 - y1) * 180 / math.pi
+                    angles.append(a)
+            if angles:
+                roll = float(np.median(angles))
+
+        # Pitch: face center vertical offset from image center
+        face_cy = (y + h / 2) / img_h  # 0 = top, 1 = bottom
+        pitch = (0.5 - face_cy) * 40   # positive = looking down
+
+        # Yaw: fixed at ±85° for side profile
+        yaw = 85.0 * facing_sign
+
+        logger.info("Profile cascade: yaw=%.1f pitch=%.1f roll=%.1f", yaw, pitch, roll)
+        return {"yaw": round(yaw, 1), "pitch": round(pitch, 1), "roll": round(roll, 1)}
 
 
 _analyzer = _LazyAnalyzer()
