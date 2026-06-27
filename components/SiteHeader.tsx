@@ -106,32 +106,41 @@ export default function SiteHeader() {
           </nav>
         </div>
 
-        {/* Right: language switcher + about + login / user */}
+        {/* Right */}
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* About link — icon on mobile, text on desktop */}
+
+          {/* About — text on desktop only */}
           {loggedIn === false && (
-            <Link href="/about" className="text-muted hover:text-fg transition-colors">
-              <span className="sm:hidden text-base leading-none" title={t.navAbout}>ℹ</span>
-              <span className="hidden sm:inline text-xs whitespace-nowrap">{t.navAbout}</span>
+            <Link href="/about"
+              className="hidden sm:inline text-xs text-muted hover:text-fg transition-colors whitespace-nowrap">
+              {t.navAbout}
             </Link>
           )}
 
-          {/* Language switcher */}
-          <div className="flex items-center gap-0.5">
+          {/* Language switcher — cycle button on mobile, all 3 on desktop */}
+          <button
+            onClick={() => {
+              const idx = LANGS.findIndex(l => l.code === lang);
+              setLang(LANGS[(idx + 1) % LANGS.length].code);
+            }}
+            className="sm:hidden text-xs text-accent font-semibold px-1.5 py-0.5"
+          >
+            {lang.toUpperCase()}
+          </button>
+          <div className="hidden sm:flex items-center gap-0.5">
             {LANGS.map(({ code, label }) => (
               <button
                 key={code}
                 onClick={() => setLang(code)}
                 className={`text-xs px-1.5 py-0.5 rounded transition-colors
-                  ${lang === code
-                    ? "text-accent font-semibold"
-                    : "text-muted hover:text-fg"}`}
+                  ${lang === code ? "text-accent font-semibold" : "text-muted hover:text-fg"}`}
               >
                 {label}
               </button>
             ))}
           </div>
 
+          {/* Login / logout */}
           {loggedIn === false && (
             <Link href="/pro/login"
               className="text-xs text-muted hover:text-fg transition-colors whitespace-nowrap">
