@@ -102,16 +102,20 @@ export default function SiteHeader() {
                   {label}
                 </Link>
               ))
-            ) : (
-              <Link href="/about" className="text-muted hover:text-fg transition-colors whitespace-nowrap text-sm">
-                {t.navAbout}
-              </Link>
-            )}
+            ) : null}
           </nav>
         </div>
 
-        {/* Right: language switcher + user info + logout */}
-        <div className="flex items-center gap-3">
+        {/* Right: language switcher + about + login / user */}
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* About link — icon on mobile, text on desktop */}
+          {loggedIn === false && (
+            <Link href="/about" className="text-muted hover:text-fg transition-colors">
+              <span className="sm:hidden text-base leading-none" title={t.navAbout}>ℹ</span>
+              <span className="hidden sm:inline text-xs whitespace-nowrap">{t.navAbout}</span>
+            </Link>
+          )}
+
           {/* Language switcher */}
           <div className="flex items-center gap-0.5">
             {LANGS.map(({ code, label }) => (
