@@ -103,14 +103,9 @@ export default function SiteHeader() {
                 </Link>
               ))
             ) : (
-              <>
-                <Link href="/about" className="text-muted hover:text-fg transition-colors whitespace-nowrap">
-                  {t.navAbout}
-                </Link>
-                <Link href="/pro/login" className="text-muted hover:text-fg transition-colors whitespace-nowrap">
-                  {t.navLogin}
-                </Link>
-              </>
+              <Link href="/about" className="hidden sm:inline text-muted hover:text-fg transition-colors whitespace-nowrap">
+                {t.navAbout}
+              </Link>
             )}
           </nav>
         </div>
@@ -133,6 +128,12 @@ export default function SiteHeader() {
             ))}
           </div>
 
+          {loggedIn === false && (
+            <Link href="/pro/login"
+              className="text-xs text-muted hover:text-fg transition-colors whitespace-nowrap">
+              {t.navLogin}
+            </Link>
+          )}
           <div className={`flex items-center gap-3 transition-opacity duration-150
             ${loggedIn === true ? "opacity-100" : "opacity-0 pointer-events-none"}`}>
             <span className="hidden sm:block text-xs text-muted truncate max-w-[140px]">
