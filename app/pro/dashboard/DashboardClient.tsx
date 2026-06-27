@@ -11,7 +11,7 @@ export default function DashboardClient() {
     <div className="max-w-2xl mx-auto px-4 py-12 space-y-16">
 
       {/* Hero */}
-      <section className="flex gap-8 items-start">
+      <section className="flex flex-col sm:flex-row gap-8 items-start">
         <div className="flex-1 space-y-5 min-w-0">
           <p className="text-xs text-accent uppercase tracking-widest">{t.dashboardTagline}</p>
           <h1 className="text-2xl font-bold leading-snug tracking-tight">
@@ -26,7 +26,7 @@ export default function DashboardClient() {
         <img
           src={t.dashboardHeroImage}
           alt=""
-          className="w-96 sm:w-[440px] flex-shrink-0 rounded-xl border border-border object-cover mt-10"
+          className="w-full sm:w-[440px] sm:flex-shrink-0 rounded-xl border border-border object-cover sm:mt-10"
         />
       </section>
 
