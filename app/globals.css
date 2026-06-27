@@ -1,0 +1,121 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Dark mode (default) ─────────────────────────────────────── */
+:root {
+  --color-bg:      15 15 15;
+  --color-surface: 26 26 26;
+  --color-border:  42 42 42;
+  --color-muted:   102 102 102;
+  --color-fg:      245 245 245;
+  color-scheme: dark;
+}
+
+/* ── Light mode ─────────────────────────────────────────────── */
+[data-theme="light"] {
+  --color-bg:      255 255 255;
+  --color-surface: 248 249 250;
+  --color-border:  229 231 235;
+  --color-muted:   156 163 175;
+  --color-fg:      15 15 15;
+  color-scheme: light;
+}
+
+html, body {
+  background-color: rgb(var(--color-bg));
+  color: rgb(var(--color-fg));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+input[type="file"] { display: none; }
+
+.metric-card { transition: border-color 0.2s ease, background-color 0.2s ease; }
+
+html { transition: background-color 0.15s ease, color 0.15s ease; }
+
+/*
+ * ── Theme overrides ──────────────────────────────────────────
+ *
+ * Tailwind JIT compiles semantic colors as static rgb() values, not CSS
+ * variable references. We override them here with two strategies:
+ *
+ *   1. Single-class rules using var() — same specificity as Tailwind,
+ *      later in file → wins. Handles dark mode because :root vars are correct.
+ *
+ *   2. [data-theme="light"] compound rules — higher specificity (0,2,0)
+ *      vs Tailwind (0,1,0) → guaranteed override for light mode.
+ */
+
+/* ── Strategy 1: var()-based (dark mode correct by default) ── */
+.bg-bg        { background-color: rgb(var(--color-bg)); }
+.bg-bg\/90    { background-color: rgb(var(--color-bg) / 0.9); }
+.bg-surface   { background-color: rgb(var(--color-surface)); }
+
+.text-fg      { color: rgb(var(--color-fg)); }
+.text-fg\/90  { color: rgb(var(--color-fg) / 0.9); }
+.text-fg\/80  { color: rgb(var(--color-fg) / 0.8); }
+.text-fg\/70  { color: rgb(var(--color-fg) / 0.7); }
+.text-fg\/65  { color: rgb(var(--color-fg) / 0.65); }
+.text-fg\/60  { color: rgb(var(--color-fg) / 0.6); }
+.text-fg\/50  { color: rgb(var(--color-fg) / 0.5); }
+.text-fg\/30  { color: rgb(var(--color-fg) / 0.3); }
+
+.text-muted     { color: rgb(var(--color-muted)); }
+.text-muted\/60 { color: rgb(var(--color-muted) / 0.6); }
+
+.border-border  { border-color: rgb(var(--color-border)); }
+.divide-border > :not([hidden]) ~ :not([hidden]) { border-color: rgb(var(--color-border)); }
+
+.bg-fg\/20    { background-color: rgb(var(--color-fg) / 0.2); }
+.bg-fg\/10    { background-color: rgb(var(--color-fg) / 0.1); }
+.bg-fg\/5     { background-color: rgb(var(--color-fg) / 0.05); }
+.border-fg\/30 { border-color: rgb(var(--color-fg) / 0.3); }
+.border-fg\/20 { border-color: rgb(var(--color-fg) / 0.2); }
+.border-fg\/40 { border-color: rgb(var(--color-fg) / 0.4); }
+.hover\:bg-fg\/5:hover    { background-color: rgb(var(--color-fg) / 0.05); }
+.hover\:bg-fg\/10:hover   { background-color: rgb(var(--color-fg) / 0.1); }
+.hover\:border-fg\/30:hover { border-color: rgb(var(--color-fg) / 0.3); }
+.hover\:border-fg\/40:hover { border-color: rgb(var(--color-fg) / 0.4); }
+.hover\:text-fg:hover     { color: rgb(var(--color-fg)); }
+
+/* ── Strategy 2: explicit light-mode values (higher specificity) ── */
+[data-theme="light"] .bg-bg        { background-color: #ffffff; }
+[data-theme="light"] .bg-bg\/90    { background-color: rgb(255 255 255 / 0.9); }
+[data-theme="light"] .bg-surface   { background-color: #f8f9fa; }
+
+[data-theme="light"] .text-fg      { color: #0f0f0f; }
+[data-theme="light"] .text-fg\/90  { color: rgb(15 15 15 / 0.9); }
+[data-theme="light"] .text-fg\/80  { color: rgb(15 15 15 / 0.8); }
+[data-theme="light"] .text-fg\/70  { color: rgb(15 15 15 / 0.7); }
+[data-theme="light"] .text-fg\/65  { color: rgb(15 15 15 / 0.65); }
+[data-theme="light"] .text-fg\/60  { color: rgb(15 15 15 / 0.6); }
+[data-theme="light"] .text-fg\/50  { color: rgb(15 15 15 / 0.5); }
+[data-theme="light"] .text-fg\/30  { color: rgb(15 15 15 / 0.3); }
+
+[data-theme="light"] .text-muted     { color: #9ca3af; }
+[data-theme="light"] .text-muted\/60 { color: rgb(156 163 175 / 0.6); }
+
+[data-theme="light"] .border-border  { border-color: #e5e7eb; }
+[data-theme="light"] .divide-border > :not([hidden]) ~ :not([hidden]) { border-color: #e5e7eb; }
+
+[data-theme="light"] .bg-fg\/20    { background-color: rgb(15 15 15 / 0.2); }
+[data-theme="light"] .bg-fg\/10    { background-color: rgb(15 15 15 / 0.1); }
+[data-theme="light"] .bg-fg\/5     { background-color: rgb(15 15 15 / 0.05); }
+[data-theme="light"] .border-fg\/30 { border-color: rgb(15 15 15 / 0.3); }
+[data-theme="light"] .border-fg\/20 { border-color: rgb(15 15 15 / 0.2); }
+[data-theme="light"] .border-fg\/40 { border-color: rgb(15 15 15 / 0.4); }
+[data-theme="light"] .hover\:bg-fg\/5:hover    { background-color: rgb(15 15 15 / 0.05); }
+[data-theme="light"] .hover\:bg-fg\/10:hover   { background-color: rgb(15 15 15 / 0.1); }
+[data-theme="light"] .hover\:border-fg\/30:hover { border-color: rgb(15 15 15 / 0.3); }
+[data-theme="light"] .hover\:border-fg\/40:hover { border-color: rgb(15 15 15 / 0.4); }
+[data-theme="light"] .hover\:text-fg:hover     { color: #0f0f0f; }
+
+/* Dark mode: filled accent buttons → near-white (high contrast on dark bg) */
+.bg-accent { background-color: rgba(255, 255, 255, 0.92); }
+
+/* Light mode: blue-500 for contrast on white */
+[data-theme="light"] .bg-accent     { background-color: #3b82f6; }
+[data-theme="light"] .text-accent   { color: #2563eb; }
+[data-theme="light"] .border-accent { border-color: #3b82f6; }
