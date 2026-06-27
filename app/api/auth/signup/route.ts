@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createTransport } from "nodemailer";
 import { type NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -26,10 +27,11 @@ export async function POST(req: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 
-  const resendKey = process.env.RESEND_API_KEY;
+  const gmailUser = process.env.GMAIL_USER;
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
 
   // Local dev fallback: no email confirmation
-  if (!resendKey) {
+  if (!gmailUser || !gmailPass) {
     const { error } = await admin.auth.admin.createUser({
       email,
       password,
@@ -58,19 +60,19 @@ export async function POST(req: NextRequest) {
 
   const confirmUrl = data.properties.action_link;
 
-  // Send confirmation email via Resend HTTP API
-  const emailRes = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${resendKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      from: "Angle Log <onboarding@resend.dev>",
-      to: [email],
+  // Send confirmation email via Gmail SMTP
+  const transporter = createTransport({
+    service: "gmail",
+    auth: { user: gmailUser, pass: gmailPass },
+  });
+
+  try {
+    await transporter.sendMail({
+      from: `"Angle Log" <${gmailUser}>`,
+      to: email,
       subject: "【Angle Log】メールアドレスの確認",
       html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
           <h2 style="margin:0 0 16px;font-size:20px">Angle Log へようこそ</h2>
           <p style="margin:0 0 24px;color:#444;line-height:1.6">
             以下のボタンをクリックして、メールアドレスの確認を完了してください。
@@ -85,15 +87,11 @@ export async function POST(req: NextRequest) {
           </p>
         </div>
       `,
-    }),
-  });
-
-  if (!emailRes.ok) {
-    // Roll back: delete the unconfirmed user
+    });
+  } catch (e) {
     await admin.auth.admin.deleteUser(data.user.id).catch(() => {});
-    const detail = await emailRes.text().catch(() => "");
     return NextResponse.json(
-      { error: `メール送信に失敗しました: ${detail}` },
+      { error: `メール送信に失敗しました: ${String(e)}` },
       { status: 500 },
     );
   }
