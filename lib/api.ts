@@ -1,4 +1,5 @@
-const API_BASE = "/api";
+import { analyzeImageFile } from "./mediapipe";
+import { measureBrightness } from "./brightness";
 
 export interface AnalysisResult {
   yaw_diff:          number;
@@ -25,23 +26,49 @@ export function getErrorMessage(code: string | null): string {
   return ERROR_MESSAGES[code] ?? "エラーが発生しました。別の写真でお試しください。";
 }
 
+function round1(n: number) {
+  return Math.round(n * 10) / 10;
+}
+
+function roundAngles(a: { yaw: number; pitch: number; roll: number }) {
+  return { yaw: round1(a.yaw), pitch: round1(a.pitch), roll: round1(a.roll) };
+}
+
 export async function analyzeImages(
   before: File,
   after: File
 ): Promise<AnalysisResult> {
-  const form = new FormData();
-  form.append("before", before);
-  form.append("after", after);
+  const [bResult, aResult, bBright, aBright] = await Promise.all([
+    analyzeImageFile(before),
+    analyzeImageFile(after),
+    measureBrightness(before),
+    measureBrightness(after),
+  ]);
 
-  const res = await fetch(`${API_BASE}/analyze`, {
-    method: "POST",
-    body: form,
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new Error(`API error ${res.status}: ${text}`);
+  if (!bResult.angles || !aResult.angles) {
+    return {
+      yaw_diff: 0,
+      pitch_diff: 0,
+      roll_diff: 0,
+      brightness_diff: 0,
+      before_angles: { yaw: 0, pitch: 0, roll: 0 },
+      after_angles:  { yaw: 0, pitch: 0, roll: 0 },
+      partial_detection: true,
+      error: "no_face_detected",
+    };
   }
 
-  return res.json() as Promise<AnalysisResult>;
+  const brightness_diff =
+    bBright > 0 ? round1(((aBright - bBright) / bBright) * 100) : 0;
+
+  return {
+    yaw_diff:        round1(aResult.angles.yaw   - bResult.angles.yaw),
+    pitch_diff:      round1(aResult.angles.pitch - bResult.angles.pitch),
+    roll_diff:       round1(aResult.angles.roll  - bResult.angles.roll),
+    brightness_diff,
+    before_angles:   roundAngles(bResult.angles),
+    after_angles:    roundAngles(aResult.angles),
+    partial_detection: false,
+    error: null,
+  };
 }

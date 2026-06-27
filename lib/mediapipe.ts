@@ -7,6 +7,10 @@ import {
 const WASM_PATH =
   "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm";
 
+const MODEL_PATH =
+  "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task";
+
+// VIDEO mode landmarker — used by CameraCapture for live preview
 let landmarker: FaceLandmarker | null = null;
 
 export async function getFaceLandmarker(): Promise<FaceLandmarker> {
@@ -15,8 +19,7 @@ export async function getFaceLandmarker(): Promise<FaceLandmarker> {
   const vision = await FilesetResolver.forVisionTasks(WASM_PATH);
   landmarker = await FaceLandmarker.createFromOptions(vision, {
     baseOptions: {
-      modelAssetPath:
-        "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+      modelAssetPath: MODEL_PATH,
       delegate: "GPU",
     },
     outputFaceBlendshapes: false,
@@ -26,6 +29,44 @@ export async function getFaceLandmarker(): Promise<FaceLandmarker> {
   });
 
   return landmarker;
+}
+
+// IMAGE mode landmarker — used for static photo analysis
+let imageLandmarker: FaceLandmarker | null = null;
+
+async function getImageFaceLandmarker(): Promise<FaceLandmarker> {
+  if (imageLandmarker) return imageLandmarker;
+
+  const vision = await FilesetResolver.forVisionTasks(WASM_PATH);
+  imageLandmarker = await FaceLandmarker.createFromOptions(vision, {
+    baseOptions: {
+      modelAssetPath: MODEL_PATH,
+      delegate: "CPU",
+    },
+    outputFaceBlendshapes: false,
+    outputFacialTransformationMatrixes: true,
+    runningMode: "IMAGE",
+    numFaces: 1,
+  });
+
+  return imageLandmarker;
+}
+
+export async function analyzeImageFile(
+  file: File
+): Promise<{ angles: FaceAngles | null; partial: boolean }> {
+  const landmarkerInst = await getImageFaceLandmarker();
+  const bitmap = await createImageBitmap(file);
+
+  let result: FaceLandmarkerResult;
+  try {
+    result = landmarkerInst.detect(bitmap);
+  } finally {
+    bitmap.close();
+  }
+
+  const angles = extractAngles(result);
+  return { angles, partial: angles === null };
 }
 
 export interface FaceAngles {
