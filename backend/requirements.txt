@@ -3,11 +3,4 @@ uvicorn[standard]
 python-multipart
 numpy
 opencv-python-headless
-Pillow
-PyYAML
-scipy
-torch
-torchvision
-onnxruntime
-scikit-image
-matplotlib
+mediapipe

@@ -1,16 +1,15 @@
 """
-Face angle and brightness analyzer using 3DDFA_V2.
+Face angle and brightness analyzer using MediaPipe FaceLandmarker (Tasks API).
 
-3DDFA_V2 must be cloned into the same directory as this file:
-  git clone https://github.com/cleardusk/3DDFA_V2 --depth=1
-  cd 3DDFA_V2
-  sh ./build.sh
+Replaces the previous 3DDFA_V2 backend — same JSON interface, no heavy build step.
+The face_landmarker.task model (~25 MB) is downloaded on first startup and cached.
 """
 
-import sys
-import os
 import gc
 import logging
+import math
+import os
+import urllib.request
 from typing import Optional
 
 import cv2
@@ -18,45 +17,47 @@ import numpy as np
 
 logger = logging.getLogger(__name__)
 
-TDDFA_DIR = os.path.join(os.path.dirname(__file__), "3DDFA_V2")
-if TDDFA_DIR not in sys.path:
-    sys.path.insert(0, TDDFA_DIR)
+MODEL_PATH = os.path.join(os.path.dirname(__file__), "face_landmarker.task")
+MODEL_URL  = (
+    "https://storage.googleapis.com/mediapipe-models/"
+    "face_landmarker/face_landmarker/float16/1/face_landmarker.task"
+)
+
+
+def _download_model() -> None:
+    if os.path.exists(MODEL_PATH):
+        return
+    logger.info("Downloading face_landmarker.task (~25 MB) …")
+    urllib.request.urlretrieve(MODEL_URL, MODEL_PATH)
+    logger.info("Model ready at %s", MODEL_PATH)
 
 
 class _LazyAnalyzer:
-    """Load 3DDFA_V2 once on first use to keep startup fast."""
+    """Load MediaPipe FaceLandmarker once on first use to keep startup fast."""
 
     def __init__(self):
-        self._tddfa = None
-        self._face_boxes = None
+        self._landmarker = None
+        self._mp = None
 
     def _ensure_loaded(self):
-        if self._tddfa is not None:
+        if self._landmarker is not None:
             return
+        _download_model()
 
-        try:
-            import yaml
-            from FaceBoxes import FaceBoxes
-            from TDDFA import TDDFA
-        except ImportError as exc:
-            raise RuntimeError(
-                "3DDFA_V2 is not installed. "
-                "Clone https://github.com/cleardusk/3DDFA_V2 into backend/3DDFA_V2 "
-                "and run 'sh ./build.sh' inside it."
-            ) from exc
+        import mediapipe as mp
+        from mediapipe.tasks import python as mp_python
+        from mediapipe.tasks.python import vision as mp_vision
 
-        cfg_path = os.path.join(TDDFA_DIR, "configs", "mb1_120x120.yml")
-        with open(cfg_path) as f:
-            cfg = yaml.safe_load(f)
-
-        # 3DDFA_V2 uses relative paths (configs/, weights/) so we must run from its directory
-        _prev_cwd = os.getcwd()
-        try:
-            os.chdir(TDDFA_DIR)
-            self._tddfa = TDDFA(gpu_mode=False, **cfg)
-            self._face_boxes = FaceBoxes()
-        finally:
-            os.chdir(_prev_cwd)
+        base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
+        options = mp_vision.FaceLandmarkerOptions(
+            base_options=base_options,
+            output_face_blendshapes=False,
+            output_facial_transformation_matrixes=True,
+            num_faces=1,
+            running_mode=mp_vision.RunningMode.IMAGE,
+        )
+        self._landmarker = mp_vision.FaceLandmarker.create_from_options(options)
+        self._mp = mp
 
     def _decode(self, img_bytes: bytes) -> np.ndarray:
         arr = np.frombuffer(img_bytes, np.uint8)
@@ -69,53 +70,82 @@ class _LazyAnalyzer:
             img = cv2.resize(img, (int(w * scale), int(h * scale)), interpolation=cv2.INTER_AREA)
         return img
 
-    def _detect_boxes(self, img: np.ndarray) -> tuple[list, bool]:
-        """
-        Returns (boxes, is_partial).
-        is_partial=True means no face was detected and we fell back to
-        using the full image region — useful for cropped eye/nose photos.
-        """
-        boxes = self._face_boxes(img)
-
-        # Multiple faces: keep only the highest-confidence one
-        if len(boxes) > 1:
-            boxes = sorted(boxes, key=lambda b: b[4], reverse=True)[:1]
-
-        if len(boxes) == 1:
-            return boxes, False
-
-        # No face detected → fall back to full-image bounding box.
-        # Pad slightly inward so 3DDFA_V2 has room to fit the model.
-        h, w = img.shape[:2]
-        pad_x = int(w * 0.05)
-        pad_y = int(h * 0.05)
-        fallback = [[pad_x, pad_y, w - pad_x, h - pad_y, 1.0]]
-        logger.info("No face detected; using full-image fallback box (partial mode)")
-        return fallback, True
-
     def analyze_one(self, img_bytes: bytes) -> dict:
         self._ensure_loaded()
 
-        img = self._decode(img_bytes)
-        boxes, is_partial = self._detect_boxes(img)
+        img_bgr = self._decode(img_bytes)
+        img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
+        mp_image = self._mp.Image(image_format=self._mp.ImageFormat.SRGB, data=img_rgb)
 
-        param_lst, roi_box_lst = self._tddfa(img, boxes)
+        result = self._landmarker.detect(mp_image)
 
-        from utils.pose import calc_pose
-        _, angles = calc_pose(param_lst[0])
-        yaw, pitch, roll = float(angles[0]), float(angles[1]), float(angles[2])
+        # Primary: transformation matrix (most accurate, frontal + mild profile)
+        angles = self._extract_angles(result)
+        partial = angles is None
 
-        ycrcb = cv2.cvtColor(img, cv2.COLOR_BGR2YCrCb)
+        # Fallback: estimate from 2-D landmarks (profile / partial-face shots)
+        if angles is None:
+            angles = self._estimate_from_landmarks(result)
+
+        ycrcb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YCrCb)
         brightness = float(np.mean(ycrcb[:, :, 0]))
 
-        del img
+        del img_bgr, img_rgb, mp_image
         return {
-            "yaw": yaw,
-            "pitch": pitch,
-            "roll": roll,
+            "yaw":        angles["yaw"]   if angles else 0.0,
+            "pitch":      angles["pitch"] if angles else 0.0,
+            "roll":       angles["roll"]  if angles else 0.0,
             "brightness": brightness,
-            "partial": is_partial,
+            # partial=True only when both methods failed (no face visible at all)
+            "partial":    partial and (angles is None),
         }
+
+    @staticmethod
+    def _extract_angles(result) -> Optional[dict]:
+        """Extract Euler angles from MediaPipe's 4×4 facial transformation matrix.
+
+        Column-major storage, YXZ decomposition — identical to the JS extractAngles():
+          yaw   = atan2(m[8],  m[10])
+          pitch = asin(-m[9])
+          roll  = atan2(m[1],  m[5])
+        """
+        if not result.facial_transformation_matrixes:
+            return None
+        m = result.facial_transformation_matrixes[0].data
+        if len(m) < 16:
+            return None
+        yaw   = math.atan2(m[8],  m[10]) * 180 / math.pi
+        pitch = math.asin(max(-1.0, min(1.0, float(-m[9])))) * 180 / math.pi
+        roll  = math.atan2(m[1],  m[5])  * 180 / math.pi
+        return {"yaw": yaw, "pitch": pitch, "roll": roll}
+
+    @staticmethod
+    def _estimate_from_landmarks(result) -> Optional[dict]:
+        """Rough angle estimate from 2-D landmark coords when the matrix is unavailable."""
+        if not result.face_landmarks:
+            return None
+        lms = result.face_landmarks[0]
+        if len(lms) < 468:
+            return None
+
+        left_eye  = lms[33]   # left eye outer corner
+        right_eye = lms[263]  # right eye outer corner
+        nose_tip  = lms[1]    # nose tip
+
+        eye_span_x = right_eye.x - left_eye.x
+        eye_span_y = right_eye.y - left_eye.y
+        eye_span   = math.sqrt(eye_span_x ** 2 + eye_span_y ** 2)
+        if eye_span < 0.02:
+            return None
+
+        nose_ratio  = (nose_tip.x - left_eye.x) / (eye_span_x or eye_span)
+        yaw         = (nose_ratio - 0.5) * 130
+        roll        = math.atan2(eye_span_y, eye_span_x) * 180 / math.pi
+        eye_mid_y   = (left_eye.y + right_eye.y) / 2
+        pitch_ratio = (nose_tip.y - eye_mid_y) / eye_span
+        pitch       = -(pitch_ratio - 1.3) * 45
+
+        return {"yaw": yaw, "pitch": pitch, "roll": roll}
 
 
 _analyzer = _LazyAnalyzer()
@@ -132,6 +162,7 @@ def analyze_images(before_bytes: bytes, after_bytes: bytes) -> dict:
     partial_detection = False
     before_angles = {"yaw": 0.0, "pitch": 0.0, "roll": 0.0}
     after_angles   = {"yaw": 0.0, "pitch": 0.0, "roll": 0.0}
+    yaw_diff = pitch_diff = roll_diff = brightness_diff = 0.0
 
     try:
         b = _analyzer.analyze_one(before_bytes)
@@ -139,8 +170,8 @@ def analyze_images(before_bytes: bytes, after_bytes: bytes) -> dict:
 
         partial_detection = b["partial"] or a["partial"]
 
-        before_angles = {"yaw": round(b["yaw"], 1), "pitch": round(b["pitch"], 1), "roll": round(b["roll"], 1)}
-        after_angles  = {"yaw": round(a["yaw"], 1), "pitch": round(a["pitch"], 1), "roll": round(a["roll"], 1)}
+        before_angles = {k: round(b[k], 1) for k in ("yaw", "pitch", "roll")}
+        after_angles  = {k: round(a[k], 1) for k in ("yaw", "pitch", "roll")}
 
         yaw_diff        = round(a["yaw"]   - b["yaw"],   1)
         pitch_diff      = round(a["pitch"] - b["pitch"], 1)
@@ -149,12 +180,10 @@ def analyze_images(before_bytes: bytes, after_bytes: bytes) -> dict:
 
     except ValueError as exc:
         error_code = str(exc)
-        yaw_diff = pitch_diff = roll_diff = brightness_diff = 0.0
 
     except Exception:
         logger.exception("Unexpected error during face analysis")
         error_code = "analysis_failed"
-        yaw_diff = pitch_diff = roll_diff = brightness_diff = 0.0
 
     finally:
         del before_bytes, after_bytes

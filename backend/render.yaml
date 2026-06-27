@@ -3,7 +3,7 @@ services:
     name: photo-checker-api
     runtime: docker
     dockerfilePath: ./Dockerfile
-    plan: standard        # needs ≥ 1 GB RAM for 3DDFA_V2 + PyTorch
+    plan: starter         # MediaPipe is lightweight; no PyTorch needed
     envVars:
       - key: ALLOWED_ORIGIN
         sync: false       # set to your Vercel production URL in the Render dashboard
