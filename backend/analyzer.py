@@ -48,7 +48,10 @@ class _LazyAnalyzer:
         from mediapipe.tasks import python as mp_python
         from mediapipe.tasks.python import vision as mp_vision
 
-        base_options = mp_python.BaseOptions(model_asset_path=MODEL_PATH)
+        base_options = mp_python.BaseOptions(
+            model_asset_path=MODEL_PATH,
+            delegate=mp_python.BaseOptions.Delegate.CPU,
+        )
         options = mp_vision.FaceLandmarkerOptions(
             base_options=base_options,
             output_face_blendshapes=False,
@@ -78,6 +81,12 @@ class _LazyAnalyzer:
         mp_image = self._mp.Image(image_format=self._mp.ImageFormat.SRGB, data=img_rgb)
 
         result = self._landmarker.detect(mp_image)
+        logger.info(
+            "Detection: faces=%d matrices=%d shape=%s",
+            len(result.face_landmarks),
+            len(result.facial_transformation_matrixes),
+            img_rgb.shape,
+        )
 
         # Primary: transformation matrix (most accurate, frontal + mild profile)
         angles = self._extract_angles(result)
