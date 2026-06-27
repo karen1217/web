@@ -56,15 +56,31 @@ async function getImageFaceLandmarker(): Promise<FaceLandmarker> {
 export async function analyzeImageFile(
   file: File
 ): Promise<{ angles: FaceAngles | null; partial: boolean }> {
-  const landmarkerInst = await getImageFaceLandmarker();
-  const bitmap = await createImageBitmap(file);
+  let landmarkerInst: FaceLandmarker;
+  try {
+    landmarkerInst = await getImageFaceLandmarker();
+  } catch {
+    // Model failed to load (network error, WASM issue, etc.)
+    return { angles: null, partial: true };
+  }
 
-  let result: FaceLandmarkerResult;
+  let bitmap: ImageBitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch {
+    return { angles: null, partial: true };
+  }
+
+  let result: FaceLandmarkerResult | null = null;
   try {
     result = landmarkerInst.detect(bitmap);
+  } catch {
+    // detect() threw (e.g. corrupted image data) — treat as no face detected
   } finally {
     bitmap.close();
   }
+
+  if (!result) return { angles: null, partial: true };
 
   // Best case: use the 3-D transformation matrix
   const matrixAngles = extractAngles(result);
