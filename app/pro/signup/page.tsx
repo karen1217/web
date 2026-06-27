@@ -32,26 +32,30 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        // Use the current origin so the confirmation link works on any domain
-        // (production Vercel URL, staging, localhost, etc.)
-        emailRedirectTo: `${window.location.origin}/pro/login`,
-      },
+    // Step 1: create email-confirmed user via server-side admin API
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
     });
 
-    if (error) {
-      console.error("signup error:", error.status, error.message);
-      setError(`[${error.status}] ${error.message}`);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      const msg = res.status === 409
+        ? "このメールアドレスはすでに登録されています。"
+        : (data.error ?? t.signupErrorFailed);
+      setError(msg);
       setLoading(false);
       return;
     }
 
-    if (!data.session) {
-      setPhase("check-email");
+    // Step 2: sign in immediately (no email confirmation needed)
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (signInError) {
+      setError(signInError.message);
+      setLoading(false);
       return;
     }
 
