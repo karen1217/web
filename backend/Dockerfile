@@ -22,11 +22,6 @@ RUN git clone https://github.com/cleardusk/3DDFA_V2.git --depth=1 3DDFA_V2 \
     && pip install --no-cache-dir cython numpy \
     && sh ./build.sh
 
-# Download model weights (mb1_120x120 – lightweight MobileNet model)
-RUN mkdir -p 3DDFA_V2/weights \
-    && wget -q "https://github.com/cleardusk/3DDFA_V2/releases/download/v1.0/mb1_120x120.pth" \
-         -O 3DDFA_V2/weights/mb1_120x120.pth
-
 # Copy app source
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
