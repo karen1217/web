@@ -32,35 +32,39 @@ export default function SignupPage() {
     setLoading(true);
     setError(null);
 
-    // Step 1: create email-confirmed user via server-side admin API
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
 
+    const resData = await res.json().catch(() => ({}));
+
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
       const msg = res.status === 409
         ? "このメールアドレスはすでに登録されています。"
-        : (data.error ?? t.signupErrorFailed);
+        : (resData.error ?? t.signupErrorFailed);
       setError(msg);
       setLoading(false);
       return;
     }
 
-    // Step 2: sign in immediately (no email confirmation needed)
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (signInError) {
-      setError(signInError.message);
-      setLoading(false);
+    // confirmed: true means no email confirmation needed (local dev)
+    if (resData.confirmed) {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      if (signInError) {
+        setError(signInError.message);
+        setLoading(false);
+        return;
+      }
+      router.push("/pro/dashboard");
+      router.refresh();
       return;
     }
 
-    router.push("/pro/dashboard");
-    router.refresh();
+    // confirmed: false means confirmation email was sent
+    setPhase("check-email");
   }
 
   const LangSwitcher = () => (

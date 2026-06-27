@@ -26,16 +26,77 @@ export async function POST(req: NextRequest) {
     { auth: { autoRefreshToken: false, persistSession: false } },
   );
 
-  const { error } = await admin.auth.admin.createUser({
+  const resendKey = process.env.RESEND_API_KEY;
+
+  // Local dev fallback: no email confirmation
+  if (!resendKey) {
+    const { error } = await admin.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+    if (error) {
+      const status = error.message.toLowerCase().includes("already") ? 409 : 400;
+      return NextResponse.json({ error: error.message }, { status });
+    }
+    return NextResponse.json({ success: true, confirmed: true });
+  }
+
+  // Generate signup link (creates the user + confirmation URL in one call)
+  const origin = req.headers.get("origin") ?? "https://web-six-psi-f7cbkr3nk6.vercel.app";
+  const { data, error } = await admin.auth.admin.generateLink({
+    type: "signup",
     email,
     password,
-    email_confirm: true,
+    options: { redirectTo: `${origin}/pro/login` },
   });
 
   if (error) {
-    const status = error.message.includes("already") ? 409 : 400;
+    const status = error.message.toLowerCase().includes("already") ? 409 : 400;
     return NextResponse.json({ error: error.message }, { status });
   }
 
-  return NextResponse.json({ success: true });
+  const confirmUrl = data.properties.action_link;
+
+  // Send confirmation email via Resend HTTP API
+  const emailRes = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${resendKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from: "Angle Log <onboarding@resend.dev>",
+      to: [email],
+      subject: "【Angle Log】メールアドレスの確認",
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px 24px;background:#fff">
+          <h2 style="margin:0 0 16px;font-size:20px">Angle Log へようこそ</h2>
+          <p style="margin:0 0 24px;color:#444;line-height:1.6">
+            以下のボタンをクリックして、メールアドレスの確認を完了してください。
+          </p>
+          <a href="${confirmUrl}"
+             style="display:inline-block;padding:12px 28px;background:#22c55e;color:#000;
+                    text-decoration:none;border-radius:8px;font-weight:700;font-size:15px">
+            メールアドレスを確認する
+          </a>
+          <p style="margin:32px 0 0;color:#999;font-size:12px">
+            このメールに心当たりがない場合は無視してください。
+          </p>
+        </div>
+      `,
+    }),
+  });
+
+  if (!emailRes.ok) {
+    // Roll back: delete the unconfirmed user
+    await admin.auth.admin.deleteUser(data.user.id).catch(() => {});
+    const detail = await emailRes.text().catch(() => "");
+    return NextResponse.json(
+      { error: `メール送信に失敗しました: ${detail}` },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ success: true, confirmed: false });
 }
