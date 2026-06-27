@@ -13,6 +13,8 @@ import { compressIfNeeded } from "@/lib/brightness";
 import { useT } from "@/lib/i18n";
 import AdBanner from "@/components/AdBanner";
 import AdLoadingModal from "@/components/AdLoadingModal";
+import HowToModal from "@/components/HowToModal";
+import FeaturesModal from "@/components/FeaturesModal";
 
 type InpaintTarget = "before" | "after";
 
@@ -27,6 +29,7 @@ export default function Home() {
   const [errorMsg, setErrorMsg]     = useState<string | null>(null);
   const [inpaintTarget, setInpaintTarget] = useState<InpaintTarget | null>(null);
   const [metricInfoOpen, setMetricInfoOpen] = useState(false);
+  const [featuresOpen, setFeaturesOpen]     = useState(false);
 
   function handleBeforeSelect(file: File, url: string) {
     setBeforeFile(file); setBeforeURL(url);
@@ -63,6 +66,7 @@ export default function Home() {
         setErrorMsg(res.error); // raw code for debugging
       } else {
         setResult(res);
+        setFeaturesOpen(true);
       }
     } catch (err) {
       const msg = String(err);
@@ -201,17 +205,6 @@ export default function Home() {
             <Result result={result} beforeURL={beforeURL} afterURL={afterURL} />
             <AdBanner scriptSrc={process.env.NEXT_PUBLIC_AD_RESULT_SRC} />
             <SaveCTA result={result} beforeFile={beforeFile} afterFile={afterFile} />
-            {/* About CTA */}
-            <div className="rounded-xl border border-border px-4 py-4 flex items-center justify-between gap-4">
-              <p className="text-xs text-muted leading-relaxed">{t.resultAboutCTA}</p>
-              <Link
-                href="/about"
-                className="shrink-0 text-xs font-medium border border-accent/50 rounded-lg px-3 py-1.5
-                           text-fg/80 hover:border-accent hover:text-fg transition-colors whitespace-nowrap"
-              >
-                {t.resultAboutButton}
-              </Link>
-            </div>
           </div>
         )}
       </main>
@@ -243,6 +236,12 @@ export default function Home() {
       {metricInfoOpen && (
         <MetricInfoModal onClose={() => setMetricInfoOpen(false)} />
       )}
+
+      {/* How-to modal (first visit) */}
+      <HowToModal />
+
+      {/* Features modal (after results) */}
+      <FeaturesModal open={featuresOpen} onClose={() => setFeaturesOpen(false)} />
     </div>
   );
 }

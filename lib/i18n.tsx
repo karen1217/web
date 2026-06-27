@@ -22,6 +22,18 @@ export interface Translations {
   metricInfoButton: string;
   resultAboutCTA: string;
   resultAboutButton: string;
+  // HowToModal
+  howToTag: string;
+  howToTitle: string;
+  howToSteps: string[];
+  howToClose: string;
+  // FeaturesModal
+  featuresModalTag: string;
+  featuresModalTitle: string;
+  featuresModalDesc: string;
+  featuresModalItems: { icon: string; label: string; desc: string }[];
+  featuresModalSkip: string;
+  featuresModalCTA: string;
   serverError: string;
   partialDetectionNotice: string;
   terms: string;
@@ -438,6 +450,23 @@ const ja: Translations = {
   analyzeButton: "角度・明るさを解析する",
   analyzing: "解析中...",
   metricInfoButton: "評価基準とは？",
+  howToTag: "使い方",
+  howToTitle: "3ステップで角度を比較",
+  howToSteps: [
+    "術前・術後の写真をそれぞれアップロード",
+    "「解析する」ボタンを押す",
+    "顔の角度・明るさの差が数値で表示される",
+  ],
+  howToClose: "さっそく使ってみる",
+  featuresModalTag: "他の機能",
+  featuresModalTitle: "もっと使いこなす",
+  featuresModalDesc: "写真チェック以外にも、継続的に記録できる機能があります。",
+  featuresModalItems: [
+    { icon: "📸", label: "同じ角度で撮影", desc: "動画から自動で指定角度のコマを切り出す" },
+    { icon: "📅", label: "タイムライン記録", desc: "術前〜経過の変化を時系列で管理" },
+  ],
+  featuresModalSkip: "閉じる",
+  featuresModalCTA: "詳しく見る",
   resultAboutCTA: "撮影・記録などの他の機能も使えます",
   resultAboutButton: "他の機能を見る →",
   serverError: "サーバーとの通信に失敗しました。しばらく待ってから再試行してください。",
@@ -856,6 +885,23 @@ const en: Translations = {
   analyzeButton: "Analyze angle & brightness",
   analyzing: "Analyzing...",
   metricInfoButton: "About the metrics",
+  howToTag: "How to use",
+  howToTitle: "Compare angles in 3 steps",
+  howToSteps: [
+    "Upload your before and after photos",
+    "Press the \"Analyze\" button",
+    "See the angle and brightness differences as numbers",
+  ],
+  howToClose: "Get started",
+  featuresModalTag: "More features",
+  featuresModalTitle: "Do even more",
+  featuresModalDesc: "Beyond photo checking, you can track progress over time.",
+  featuresModalItems: [
+    { icon: "📸", label: "Shoot at the same angle", desc: "Auto-extract frames at target angles from video" },
+    { icon: "📅", label: "Timeline record", desc: "Track changes from pre-op to recovery over time" },
+  ],
+  featuresModalSkip: "Close",
+  featuresModalCTA: "Learn more",
   resultAboutCTA: "More features available: capture, record, and more",
   resultAboutButton: "See all features →",
   serverError: "Failed to connect to server. Please try again later.",
@@ -1274,6 +1320,23 @@ const ko: Translations = {
   analyzeButton: "각도・밝기 분석하기",
   analyzing: "분석 중...",
   metricInfoButton: "평가 기준이란？",
+  howToTag: "사용 방법",
+  howToTitle: "3단계로 각도 비교",
+  howToSteps: [
+    "수술 전·후 사진을 각각 업로드",
+    "「분석하기」버튼을 누르기",
+    "얼굴 각도·밝기 차이가 숫자로 표시됨",
+  ],
+  howToClose: "바로 사용해보기",
+  featuresModalTag: "다른 기능",
+  featuresModalTitle: "더 활용하기",
+  featuresModalDesc: "사진 체크 외에도 지속적으로 기록할 수 있는 기능이 있습니다.",
+  featuresModalItems: [
+    { icon: "📸", label: "같은 각도로 촬영", desc: "동영상에서 지정 각도의 프레임을 자동 추출" },
+    { icon: "📅", label: "타임라인 기록", desc: "수술 전부터 경과까지 시간순으로 관리" },
+  ],
+  featuresModalSkip: "닫기",
+  featuresModalCTA: "자세히 보기",
   resultAboutCTA: "촬영·기록 등 더 많은 기능을 사용할 수 있습니다",
   resultAboutButton: "다른 기능 보기 →",
   serverError: "서버 연결에 실패했습니다. 잠시 후 다시 시도해 주세요.",

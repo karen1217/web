@@ -109,14 +109,6 @@ export default function SiteHeader() {
         {/* Right */}
         <div className="flex items-center gap-2 sm:gap-3">
 
-          {/* About — text on desktop only */}
-          {loggedIn === false && (
-            <Link href="/about"
-              className="hidden sm:inline text-xs text-muted hover:text-fg transition-colors whitespace-nowrap">
-              {t.navAbout}
-            </Link>
-          )}
-
           {/* Language switcher — cycle button on mobile, all 3 on desktop */}
           <button
             onClick={() => {
