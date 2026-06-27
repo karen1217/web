@@ -104,12 +104,12 @@ export default function SiteHeader() {
               ))
             ) : (
               <>
+                <Link href="/about" className="text-muted hover:text-fg transition-colors whitespace-nowrap">
+                  {t.navAbout}
+                </Link>
                 <Link href="/pro/login" className="text-muted hover:text-fg transition-colors whitespace-nowrap">
                   {t.navLogin}
                 </Link>
-                <span className="invisible select-none" aria-hidden>{t.navCapture}</span>
-                <span className="invisible select-none" aria-hidden>{t.navTimeline}</span>
-                <span className="invisible select-none" aria-hidden>{t.navSettings}</span>
               </>
             )}
           </nav>

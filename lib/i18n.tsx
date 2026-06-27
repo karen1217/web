@@ -86,6 +86,7 @@ export interface Translations {
   savePromptGuest: string;
   saveSubtextGuest: string;
   signupButton: string;
+  proFeaturesLoginPrompt: string;
   signupModalTitle: string;
   signupModalDesc: string;
   loginLink: string;
@@ -95,6 +96,7 @@ export interface Translations {
   navCapture: string;
   navTimeline: string;
   navSettings: string;
+  navAbout: string;
   navLogin: string;
   navLogout: string;
   navUnsavedLeave: string;
@@ -515,6 +517,7 @@ const ja: Translations = {
   savePromptGuest: "結果を保存しませんか？",
   saveSubtextGuest: "会員登録すると複数アングルの撮影・タイムライン保存ができます",
   signupButton: "無料で会員登録する",
+  proFeaturesLoginPrompt: "撮影・記録機能はアカウント登録で使えます（無料）",
   signupModalTitle: "保存するには会員登録が必要です",
   signupModalDesc: "登録すると複数アングル撮影・タイムライン保存・比較機能が使えます",
   loginLink: "ログイン",
@@ -523,6 +526,7 @@ const ja: Translations = {
   navCapture: "撮影",
   navTimeline: "タイムライン",
   navSettings: "設定",
+  navAbout: "Angle Logとは",
   navLogin: "ログイン",
   navLogout: "ログアウト",
   navUnsavedLeave: "撮影した写真がまだ保存されていません。\nこのページを離れますか？",
@@ -929,6 +933,7 @@ const en: Translations = {
   savePromptGuest: "Want to save your results?",
   saveSubtextGuest: "Sign up to capture multiple angles and save to timeline",
   signupButton: "Sign up for free",
+  proFeaturesLoginPrompt: "Capture and record features are available with a free account",
   signupModalTitle: "Sign up to save results",
   signupModalDesc: "Sign up to capture multiple angles, save to timeline, and compare photos",
   loginLink: "Log in",
@@ -937,6 +942,7 @@ const en: Translations = {
   navCapture: "Capture",
   navTimeline: "Timeline",
   navSettings: "Settings",
+  navAbout: "About Angle Log",
   navLogin: "Log in",
   navLogout: "Log out",
   navUnsavedLeave: "Your captured photos have not been saved yet.\nLeave this page?",
@@ -1343,6 +1349,7 @@ const ko: Translations = {
   savePromptGuest: "결과를 저장하시겠습니까?",
   saveSubtextGuest: "회원가입하면 멀티 앵글 촬영과 타임라인 저장을 사용할 수 있습니다",
   signupButton: "무료 회원가입",
+  proFeaturesLoginPrompt: "촬영·기록 기능은 무료 계정으로 사용할 수 있습니다",
   signupModalTitle: "저장하려면 회원가입이 필요합니다",
   signupModalDesc: "가입하면 멀티 앵글 촬영, 타임라인 저장, 비교 기능을 사용할 수 있습니다",
   loginLink: "로그인",
@@ -1351,6 +1358,7 @@ const ko: Translations = {
   navCapture: "촬영",
   navTimeline: "타임라인",
   navSettings: "설정",
+  navAbout: "Angle Log란",
   navLogin: "로그인",
   navLogout: "로그아웃",
   navUnsavedLeave: "촬영한 사진이 아직 저장되지 않았습니다.\n이 페이지를 떠나시겠습니까?",
