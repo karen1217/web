@@ -4,6 +4,8 @@ FROM python:3.11-slim
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libgl1 \
+    libgles2 \
+    libegl1 \
     libsm6 \
     libxext6 \
     wget \
