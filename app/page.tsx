@@ -66,10 +66,10 @@ export default function Home() {
       }
     } catch (err) {
       const msg = String(err);
-      if (msg.includes("502") || msg.includes("Backend unavailable")) {
+      if (msg.includes("502") || msg.includes("504") || msg.includes("Backend unavailable") || msg.includes("bort")) {
         setErrorMsg(getErrorMessage("Backend_unavailable"));
       } else {
-        setErrorMsg(t.serverError);
+        setErrorMsg(msg);
       }
       console.error(err);
     } finally {
