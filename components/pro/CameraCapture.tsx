@@ -5,6 +5,7 @@ import { getFaceLandmarker, extractAngles, type FaceAngles } from "@/lib/mediapi
 import AngleIndicator from "./AngleIndicator";
 import type { AnglePreset } from "@/lib/supabase/types";
 import { useT } from "@/lib/i18n";
+import { localizePresetLabel } from "@/lib/presetLabel";
 
 interface CapturedShot {
   preset:  AnglePreset;
@@ -234,7 +235,7 @@ export default function CameraCapture({ presets, onComplete }: Props) {
             currentYaw={state === "detecting" ? (angles?.yaw ?? null) : null}
             targetYaw={preset.yaw}
             tolerance={Math.abs(preset.yaw) < 10 ? TOLERANCE_YAW_FRONT : TOLERANCE_YAW}
-            label={preset.label}
+            label={localizePresetLabel(preset, t.presetDefaultLabel)}
             captured={capturedRef.current.has(preset.id)}
           />
         ))}

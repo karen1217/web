@@ -675,7 +675,7 @@ const ja: Translations = {
   presetDeleteFailed: "削除に失敗しました",
   presetDefaultLabel: (yaw) => {
     if (yaw === 0) return "正面";
-    const dir = yaw > 0 ? "右" : "左";
+    const dir = yaw > 0 ? "左" : "右";
     return `斜め${Math.abs(yaw)}°${dir}`;
   },
   cameraHintFront:     "正面を向いてください",
@@ -1089,7 +1089,7 @@ const en: Translations = {
   presetDeleteFailed: "Failed to delete",
   presetDefaultLabel: (yaw) => {
     if (yaw === 0) return "Front";
-    const dir = yaw > 0 ? "Right" : "Left";
+    const dir = yaw > 0 ? "Left" : "Right";
     return `${Math.abs(yaw)}° ${dir}`;
   },
   cameraHintFront:     "Face forward",
@@ -1503,7 +1503,7 @@ const ko: Translations = {
   presetDeleteFailed: "삭제에 실패했습니다",
   presetDefaultLabel: (yaw) => {
     if (yaw === 0) return "정면";
-    const dir = yaw > 0 ? "오른쪽" : "왼쪽";
+    const dir = yaw > 0 ? "왼쪽" : "오른쪽";
     return `${Math.abs(yaw)}° ${dir}`;
   },
   cameraHintFront:     "정면을 향해 주세요",
