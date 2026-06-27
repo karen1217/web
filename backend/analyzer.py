@@ -233,7 +233,11 @@ class _LazyAnalyzer:
                         "YuNet: yaw=%.1f pitch=%.1f roll=%.1f eye_dx=%.1f face_w=%.1f",
                         yaw, pitch, roll, eye_dx, face_w,
                     )
-                    return {"yaw": round(yaw, 1), "pitch": round(pitch, 1), "roll": round(roll, 1)}
+                    return {
+                        "yaw":   round(float(yaw),  1),
+                        "pitch": round(float(pitch), 1),
+                        "roll":  round(float(roll),  1),
+                    }
             except Exception as e:
                 logger.warning("YuNet attempt failed: %s", e)
                 continue

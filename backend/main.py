@@ -42,7 +42,11 @@ async def analyze(
     if len(before_data) > _MAX_FILE_BYTES or len(after_data) > _MAX_FILE_BYTES:
         raise HTTPException(status_code=413, detail="File too large (max 10 MB per image)")
 
-    result = analyze_images(before_data, after_data)
+    try:
+        result = analyze_images(before_data, after_data)
+    except Exception as exc:
+        logger.exception("Unhandled error in analyze endpoint")
+        return JSONResponse(content={"error": f"analyze_failed:{exc}"}, status_code=500)
     return JSONResponse(content=result)
 
 
