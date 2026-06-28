@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Uploader from "@/components/Uploader";
 import Result from "@/components/Result";
@@ -30,6 +30,22 @@ export default function Home() {
   const [inpaintTarget, setInpaintTarget] = useState<InpaintTarget | null>(null);
   const [metricInfoOpen, setMetricInfoOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen]     = useState(false);
+  const featuresReadyRef = useRef(false);
+
+  useEffect(() => {
+    if (!featuresReadyRef.current) return;
+    function onScroll() {
+      const nearBottom =
+        window.innerHeight + window.scrollY >= document.body.scrollHeight - 80;
+      if (nearBottom) {
+        setFeaturesOpen(true);
+        featuresReadyRef.current = false;
+        window.removeEventListener("scroll", onScroll);
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [result]);
 
   function handleBeforeSelect(file: File, url: string) {
     setBeforeFile(file); setBeforeURL(url);
@@ -66,7 +82,7 @@ export default function Home() {
         setErrorMsg(res.error); // raw code for debugging
       } else {
         setResult(res);
-        setFeaturesOpen(true);
+        featuresReadyRef.current = true;
       }
     } catch (err) {
       const msg = String(err);
