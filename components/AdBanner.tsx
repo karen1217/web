@@ -1,33 +1,29 @@
 "use client";
-import { useEffect, useRef } from "react";
+import Script from "next/script";
+import { useState } from "react";
 
 interface Props {
   scriptSrc?: string;
 }
 
 export default function AdBanner({ scriptSrc }: Props) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const injected = useRef(false);
-
   const src = scriptSrc ?? process.env.NEXT_PUBLIC_AD_BANNER_SRC;
-
-  useEffect(() => {
-    if (!src || !containerRef.current || injected.current) return;
-    injected.current = true;
-
-    // Adsterra needs the script injected into document.body, not a div
-    const script = document.createElement("script");
-    script.async = true;
-    script.setAttribute("data-cfasync", "false");
-    script.src = src;
-    containerRef.current.appendChild(script);
-  }, [src]);
+  const [loaded, setLoaded] = useState(false);
 
   if (!src) return null;
 
   return (
-    <div className="w-full flex justify-center my-4 min-h-[100px]">
-      <div ref={containerRef} className="w-full max-w-xl" />
+    <div className="w-full my-4">
+      <div
+        id={`ad-${src.slice(-8)}`}
+        className={`w-full min-h-[100px] flex justify-center transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+      />
+      <Script
+        src={src.startsWith("//") ? `https:${src}` : src}
+        strategy="lazyOnload"
+        data-cfasync="false"
+        onLoad={() => setLoaded(true)}
+      />
     </div>
   );
 }

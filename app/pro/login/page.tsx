@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { useT, type Lang } from "@/lib/i18n";
 
@@ -14,6 +14,7 @@ const LANGS: { code: Lang; label: string }[] = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { lang, setLang, t } = useT();
   const [email, setEmail]           = useState("");
   const [password, setPassword]     = useState("");
@@ -22,6 +23,15 @@ export default function LoginPage() {
   const [notConfirmed, setNotConfirmed] = useState(false);
   const [resending, setResending]   = useState(false);
   const [resendSent, setResendSent] = useState(false);
+
+  useEffect(() => {
+    if (searchParams.get("error") === "auth") {
+      setError("メール認証に失敗しました。もう一度登録をお試しください。");
+    }
+    if (searchParams.get("verified") === "1") {
+      setError(null);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -104,6 +114,10 @@ export default function LoginPage() {
               placeholder="••••••••"
             />
           </Field>
+
+          {searchParams.get("verified") === "1" && (
+            <p className="text-sm text-ok text-center">✓ メールアドレスを確認しました。ログインしてください。</p>
+          )}
 
           {error && (
             <div className="space-y-2">
