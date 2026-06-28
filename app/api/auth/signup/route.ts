@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     type: "signup",
     email,
     password,
-    options: { redirectTo: `${origin}/pro/login` },
+    options: { redirectTo: `${origin}/auth/callback` },
   });
 
   if (error) {
