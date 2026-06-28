@@ -23,6 +23,8 @@ export default function SignupPage() {
   const [confirm, setConfirm]   = useState("");
   const [error, setError]       = useState<string | null>(null);
   const [loading, setLoading]   = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendDone, setResendDone] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -64,6 +66,7 @@ export default function SignupPage() {
     }
 
     // confirmed: false means confirmation email was sent
+    setResendDone(false);
     setPhase("check-email");
   }
 
@@ -82,6 +85,18 @@ export default function SignupPage() {
     </div>
   );
 
+  async function handleResend() {
+    if (!email || resending) return;
+    setResending(true);
+    await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+    setResending(false);
+    setResendDone(true);
+  }
+
   if (phase === "check-email") {
     return (
       <div className="min-h-screen flex items-center justify-center px-4">
@@ -92,7 +107,22 @@ export default function SignupPage() {
           <p className="text-sm text-muted leading-relaxed whitespace-pre-line">
             {t.signupCheckEmailDesc(email)}
           </p>
-          <p className="text-xs text-muted">{t.signupCheckEmailSpam}</p>
+
+          {resendDone ? (
+            <p className="text-xs text-ok">{t.signupResendDone}</p>
+          ) : (
+            <div className="space-y-2">
+              <p className="text-xs text-muted">{t.signupCheckEmailSpam}</p>
+              <button
+                onClick={handleResend}
+                disabled={resending}
+                className="text-xs text-accent hover:opacity-70 transition-opacity disabled:opacity-40"
+              >
+                {resending ? t.signupResending : t.signupResend}
+              </button>
+            </div>
+          )}
+
           <Link
             href="/pro/login"
             className="block w-full py-2.5 bg-accent text-black rounded-lg text-sm

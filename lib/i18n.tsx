@@ -336,6 +336,9 @@ export interface Translations {
   signupCheckEmailDesc: (email: string) => string;
   signupCheckEmailSpam: string;
   signupGoToLogin: string;
+  signupResend: string;
+  signupResending: string;
+  signupResendDone: string;
 
   // SaveCTA errors
   saveErrorLoginRequired: string;
@@ -780,8 +783,11 @@ const ja: Translations = {
   signupErrorFailed: "登録に失敗しました。しばらくしてからお試しください",
   signupCheckEmailTitle: "確認メールを送りました",
   signupCheckEmailDesc: (email) => `${email} に確認メールを送信しました。\nメール内のリンクをクリックして登録を完了してください。`,
-  signupCheckEmailSpam: "メールが届かない場合は迷惑メールフォルダをご確認ください。",
+  signupCheckEmailSpam: "迷惑メールフォルダも確認してみてください。",
   signupGoToLogin: "ログインへ",
+  signupResend: "メールを再送する",
+  signupResending: "送信中...",
+  signupResendDone: "再送しました。迷惑メールフォルダも確認してみてください。",
 
   saveErrorLoginRequired: "ログインが必要です",
   saveErrorUploadFailed: "画像のアップロードに失敗しました",
@@ -1217,8 +1223,11 @@ const en: Translations = {
   signupErrorFailed: "Registration failed. Please try again later.",
   signupCheckEmailTitle: "Check your email",
   signupCheckEmailDesc: (email) => `We sent a confirmation email to ${email}.\nClick the link in the email to complete your registration.`,
-  signupCheckEmailSpam: "If you don't see it, please check your spam folder.",
+  signupCheckEmailSpam: "Also check your spam folder.",
   signupGoToLogin: "Go to login",
+  signupResend: "Resend email",
+  signupResending: "Sending...",
+  signupResendDone: "Resent. Also check your spam folder.",
 
   saveErrorLoginRequired: "Login required",
   saveErrorUploadFailed: "Image upload failed",
@@ -1654,8 +1663,11 @@ const ko: Translations = {
   signupErrorFailed: "등록에 실패했습니다. 잠시 후 다시 시도해 주세요.",
   signupCheckEmailTitle: "확인 이메일을 보냈습니다",
   signupCheckEmailDesc: (email) => `${email}으로 확인 이메일을 보냈습니다.\n이메일의 링크를 클릭하여 등록을 완료해 주세요.`,
-  signupCheckEmailSpam: "이메일이 오지 않으면 스팸 폴더를 확인해 주세요.",
+  signupCheckEmailSpam: "스팸 폴더도 확인해 주세요.",
   signupGoToLogin: "로그인으로",
+  signupResend: "이메일 재전송",
+  signupResending: "전송 중...",
+  signupResendDone: "재전송했습니다. 스팸 폴더도 확인해 주세요.",
 
   saveErrorLoginRequired: "로그인이 필요합니다",
   saveErrorUploadFailed: "이미지 업로드에 실패했습니다",
