@@ -201,6 +201,8 @@ export interface Translations {
   captureSaveText: string;
   captureDoneTitle: string;
   captureAddedTo: (name: string) => string;
+  captureSkipFolder: string;
+  captureNoFolder: string;
   captureContinueCapture: string;
   captureGoToTimeline: string;
   captureCustomTimingPlaceholder: string;
@@ -644,7 +646,9 @@ const ja: Translations = {
   captureSavingText: "保存中…",
   captureSaveText: "保存する",
   captureDoneTitle: "保存しました",
-  captureAddedTo: (name) => `${name} に追加されました`,
+  captureAddedTo: (name) => name ? `${name} に追加されました` : "保存しました",
+  captureSkipFolder: "フォルダを選択せずに進む",
+  captureNoFolder: "フォルダなし",
   captureContinueCapture: "続けて撮影",
   captureGoToTimeline: "タイムラインへ",
   captureCustomTimingPlaceholder: "例：術後4ヶ月",
@@ -1079,7 +1083,9 @@ const en: Translations = {
   captureSavingText: "Saving…",
   captureSaveText: "Save",
   captureDoneTitle: "Saved",
-  captureAddedTo: (name) => `Added to ${name}`,
+  captureAddedTo: (name) => name ? `Added to ${name}` : "Saved",
+  captureSkipFolder: "Continue without folder",
+  captureNoFolder: "No folder",
   captureContinueCapture: "Keep capturing",
   captureGoToTimeline: "Go to timeline",
   captureCustomTimingPlaceholder: "e.g. 4 months post-op",
@@ -1514,7 +1520,9 @@ const ko: Translations = {
   captureSavingText: "저장 중…",
   captureSaveText: "저장",
   captureDoneTitle: "저장되었습니다",
-  captureAddedTo: (name) => `${name}에 추가되었습니다`,
+  captureAddedTo: (name) => name ? `${name}에 추가되었습니다` : "저장되었습니다",
+  captureSkipFolder: "폴더 없이 진행",
+  captureNoFolder: "폴더 없음",
   captureContinueCapture: "계속 촬영",
   captureGoToTimeline: "타임라인으로",
   captureCustomTimingPlaceholder: "예: 수술 4개월 후",

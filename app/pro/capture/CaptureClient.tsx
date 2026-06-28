@@ -136,7 +136,6 @@ export default function CaptureClient({ presets: initialPresets, cases: initialC
   }
 
   async function save() {
-    if (!selectedCase) return;
     setPhase("saving");
     setError(null);
 
@@ -147,23 +146,46 @@ export default function CaptureClient({ presets: initialPresets, cases: initialC
       timingOptions[timingIdx] ?? "";
 
     // Infer operation date from timing index if not set
-    if (timingIdx !== null && timingIdx !== 0 && !isOther && !selectedCase.operation_date) {
+    if (selectedCase && timingIdx !== null && timingIdx !== 0 && !isOther && !selectedCase.operation_date) {
       const opDate = inferOperationDate(timingIdx, capturedAt);
       if (opDate) {
         await supabase
           .from("cases")
           .update({ operation_date: opDate })
           .eq("id", selectedCase.id);
-        const updated = { ...selectedCase, operation_date: opDate };
+        const updated: Case = { ...selectedCase, operation_date: opDate };
         setSelectedCase(updated);
-        setAllCases(prev => prev.map(c => c.id === selectedCase.id ? updated : c));
+        setAllCases(prev => prev.map(c => c.id === selectedCase!.id ? updated : c));
+      }
+    }
+
+    // If no folder selected, resolve or create an "未整理" case
+    let caseId: string | null = selectedCase?.id ?? null;
+    if (!caseId) {
+      const { data: existingUncategorized } = await supabase
+        .from("cases")
+        .select("id")
+        .eq("name", "未整理")
+        .maybeSingle();
+      if (existingUncategorized) {
+        caseId = existingUncategorized.id as string;
+      } else {
+        const { data: newCase } = await supabase
+          .from("cases")
+          .insert({ name: "未整理" })
+          .select()
+          .single();
+        if (newCase) {
+          caseId = (newCase as Case).id;
+          setAllCases(prev => [newCase as Case, ...prev]);
+        }
       }
     }
 
     const { data: session, error: sessionErr } = await supabase
       .from("capture_sessions")
       .insert({
-        case_id:     selectedCase.id,
+        case_id:     caseId,
         label,
         captured_at: new Date(capturedAt).toISOString(),
         notes:       notes.trim() || null,
@@ -275,6 +297,12 @@ export default function CaptureClient({ presets: initialPresets, cases: initialC
             {t.captureProceed}
           </button>
         </div>
+        <button
+          onClick={() => { setSelectedCase(null); setPhase("details"); }}
+          className="w-full text-xs text-muted hover:text-fg transition-colors py-1"
+        >
+          {t.captureSkipFolder}
+        </button>
       </div>
     );
   }
@@ -300,7 +328,10 @@ export default function CaptureClient({ presets: initialPresets, cases: initialC
         <div>
           <h2 className="text-base font-semibold">{t.captureDetailsTitle}</h2>
           <p className="text-xs text-muted mt-0.5">
-            {t.captureCaseLabel}<span className="text-fg">{selectedCase?.name}</span>
+            {t.captureCaseLabel}
+            <span className="text-fg">
+              {selectedCase?.name ?? t.captureNoFolder}
+            </span>
           </p>
         </div>
 
